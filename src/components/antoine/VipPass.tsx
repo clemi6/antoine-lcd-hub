@@ -6,9 +6,13 @@ import { useTheme } from "./ThemeContext";
 export function VipPass() {
   const { accent, isAfterparty } = useTheme();
   const ref = useRef<HTMLAnchorElement>(null);
-  const rotX = useSpring(useMotionValue(0), { stiffness: 120, damping: 12 });
-  const rotY = useSpring(useMotionValue(0), { stiffness: 120, damping: 12 });
-  const swing = useSpring(useMotionValue(0), { stiffness: 80, damping: 8 });
+
+  // Modification : On ajuste la physique pour donner un effet "badge lourd" (moins de damping pour plus de rebond/inertie)
+  const rotX = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
+  const rotY = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
+  // Un swing beaucoup plus fluide qui agit comme un vrai pendule
+  const swing = useSpring(useMotionValue(0), { stiffness: 40, damping: 8, mass: 1.5 });
+
   const [hover, setHover] = useState(false);
 
   const onMove = (e: React.PointerEvent) => {
@@ -19,7 +23,7 @@ export function VipPass() {
     const y = (e.clientY - r.top) / r.height - 0.5;
     rotY.set(x * 25);
     rotX.set(-y * 18);
-    swing.set(x * 8);
+    swing.set(x * 12); // Amplifié pour le mouvement de souris
   };
 
   const onLeave = () => {
@@ -34,29 +38,37 @@ export function VipPass() {
     (v) => `${-v / 2}px ${20 + Math.abs(v)}px 40px rgba(0,0,0,0.6)`,
   );
 
-  // NOUVEAU : On relie l'inclinaison à la position du reflet
-  // On multiplie par 6 pour que le reflet balaye bien toute la carte
   const sheenX = useTransform(rotY, (v) => v * 6);
-  const sheenY = useTransform(rotX, (v) => -v * 6); // Inversé pour la physique de la lumière
-  // Device orientation -> map phone tilt to card rotation (mobile parallax)
+  const sheenY = useTransform(rotX, (v) => -v * 6);
+
+  // NOUVEAU : Mapping correct de l'orientation
   function handleOrientation(e: DeviceOrientationEvent) {
-    const beta = typeof e.beta === "number" ? e.beta : 0; // front-back
-    const gamma = typeof e.gamma === "number" ? e.gamma : 0; // left-right
+    const beta = typeof e.beta === "number" ? e.beta : 0; // inclinaison avant/arrière
+    const gamma = typeof e.gamma === "number" ? e.gamma : 0; // inclinaison gauche/droite
 
-    // Normalize and clamp to sensible ranges
-    const clampedBeta = Math.max(-30, Math.min(30, beta));
-    const clampedGamma = Math.max(-30, Math.min(30, gamma));
+    // 1. Correction de l'axe Z (avant/arrière)
+    // On part du principe que l'utilisateur tient son téléphone face à lui (environ 60°).
+    // On soustrait cette valeur pour créer notre nouveau point "zéro".
+    const adjustedBeta = beta - 60;
 
-    // Map to rotation degrees (smaller, subtle effect)
-    const rx = (-clampedBeta / 30) * 12; // rotateX
-    const ry = (clampedGamma / 30) * 12; // rotateY
+    // On limite les valeurs pour éviter que la carte ne fasse des tours complets
+    const clampedBeta = Math.max(-45, Math.min(45, adjustedBeta));
+    const clampedGamma = Math.max(-45, Math.min(45, gamma));
+
+    // 2. Simulation de la gravité
+    // Si on penche le téléphone vers la gauche (gamma négatif), la gravité tire le badge vers la droite par rapport à l'écran.
+    const rx = (clampedBeta / 45) * 25;
+    const ry = (clampedGamma / 45) * 20;
 
     rotX.set(rx);
     rotY.set(ry);
-    swing.set(ry / 3);
+
+    // Le balancier : on laisse la gravité agir sur le point d'attache (originY: 0)
+    // En multipliant directement la valeur brute ajustée, on obtient ce mouvement naturel gauche/droite
+    swing.set(clampedGamma * 0.8);
   }
 
-  // Use the shared orientation manager to attach/detach listeners and request permission
+  // Import dynamique de ton orientation manager
   import("../../lib/orientation").then((mod) => mod).catch(() => null);
 
   useEffect(() => {
@@ -67,11 +79,9 @@ export function VipPass() {
       const mod = await import("../../lib/orientation");
       if (!mounted) return;
 
-      // If platform doesn't require explicit permission, the manager will already be considered granted and will attach automatically.
       if (!mod.hasPermissionAPI()) {
         mod.addOrientationListener(handleOrientation);
       }
-
       return;
     })();
 
@@ -87,7 +97,6 @@ export function VipPass() {
     };
   }, [rotX, rotY, swing]);
 
-  // Request permission on iOS if needed — call on first user interaction
   async function enableOrientation() {
     const mod = await import("../../lib/orientation");
     console.debug("VipPass: requesting DeviceOrientation permission via shared manager...");
@@ -132,11 +141,10 @@ export function VipPass() {
         download
         onPointerMove={onMove}
         onPointerDown={() => {
-          // trigger iOS permission flow on first user interaction
+          // Sur iOS, ce clic va naturellement trigger le popup sans bouton intermédiaire
           enableOrientation();
         }}
         onClick={() => {
-          // also trigger onClick to be robust across browsers
           enableOrientation();
         }}
         onPointerEnter={() => setHover(true)}
@@ -152,7 +160,6 @@ export function VipPass() {
         }}
         className="relative mt-1 block w-[230px] rounded-xl bg-[#0e0e14] border border-white/10 overflow-hidden"
       >
-        {/* small indicator when orientation is enabled */}
         {orientationEnabled && (
           <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
         )}
@@ -211,13 +218,12 @@ export function VipPass() {
           </div>
         </div>
 
-        {/* NOUVEAU : subtle reflective sheen (Transformé en motion.div avec x, y et scale) */}
         <motion.div
           className="pointer-events-none absolute inset-0 opacity-30 mix-blend-screen"
           style={{
             x: sheenX,
             y: sheenY,
-            scale: 2 /* On l'agrandit pour ne pas voir les bords quand le reflet bouge */,
+            scale: 2,
             background: `linear-gradient(135deg, transparent 40%, ${
               isAfterparty ? "rgba(255,0,51,0.25)" : "rgba(0,255,204,0.25)"
             } 50%, transparent 60%)`,
