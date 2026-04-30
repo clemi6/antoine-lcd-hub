@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { DownloadSimple } from "@phosphor-icons/react";
 import { useTheme } from "./ThemeContext";
@@ -6,14 +6,16 @@ import { useTheme } from "./ThemeContext";
 export function VipPass() {
   const { accent, isAfterparty } = useTheme();
   const ref = useRef<HTMLAnchorElement>(null);
-
-  // Modification : On ajuste la physique pour donner un effet "badge lourd" (moins de damping pour plus de rebond/inertie)
   const rotX = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
   const rotY = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
-  // Un swing beaucoup plus fluide qui agit comme un vrai pendule
   const swing = useSpring(useMotionValue(0), { stiffness: 40, damping: 8, mass: 1.5 });
-
   const [hover, setHover] = useState(false);
+  const [orientationEnabled, setOrientationEnabled] = useState(false);
+
+  // État pour savoir si on doit afficher le bouton d'autorisation (uniquement pour iOS)
+  const [showPermissionButton, setShowPermissionButton] = useState(false);
+
+  const orientationManager = useRef(null);
 
   const onMove = (e: React.PointerEvent) => {
     const el = ref.current;
@@ -23,7 +25,7 @@ export function VipPass() {
     const y = (e.clientY - r.top) / r.height - 0.5;
     rotY.set(x * 25);
     rotX.set(-y * 18);
-    swing.set(x * 12); // Amplifié pour le mouvement de souris
+    swing.set(x * 12);
   };
 
   const onLeave = () => {
@@ -37,81 +39,74 @@ export function VipPass() {
     rotY,
     (v) => `${-v / 2}px ${20 + Math.abs(v)}px 40px rgba(0,0,0,0.6)`,
   );
-
   const sheenX = useTransform(rotY, (v) => v * 6);
   const sheenY = useTransform(rotX, (v) => -v * 6);
 
-  // NOUVEAU : Mapping correct de l'orientation
-  function handleOrientation(e: DeviceOrientationEvent) {
-    const beta = typeof e.beta === "number" ? e.beta : 0; // inclinaison avant/arrière
-    const gamma = typeof e.gamma === "number" ? e.gamma : 0; // inclinaison gauche/droite
+  // Utilisation de useCallback pour éviter les avertissements ESLint dans le useEffect
+  const handleOrientation = useCallback(
+    (e: DeviceOrientationEvent) => {
+      if (e.beta === null || e.gamma === null) return;
 
-    // 1. Correction de l'axe Z (avant/arrière)
-    // On part du principe que l'utilisateur tient son téléphone face à lui (environ 60°).
-    // On soustrait cette valeur pour créer notre nouveau point "zéro".
-    const adjustedBeta = beta - 60;
+      const beta = e.beta;
+      const gamma = e.gamma;
 
-    // On limite les valeurs pour éviter que la carte ne fasse des tours complets
-    const clampedBeta = Math.max(-45, Math.min(45, adjustedBeta));
-    const clampedGamma = Math.max(-45, Math.min(45, gamma));
+      const adjustedBeta = beta - 60;
+      const clampedBeta = Math.max(-45, Math.min(45, adjustedBeta));
+      const clampedGamma = Math.max(-45, Math.min(45, gamma));
 
-    // 2. Simulation de la gravité
-    // Si on penche le téléphone vers la gauche (gamma négatif), la gravité tire le badge vers la droite par rapport à l'écran.
-    const rx = (clampedBeta / 45) * 25;
-    const ry = (clampedGamma / 45) * 20;
+      const rx = (clampedBeta / 45) * 25;
+      const ry = (clampedGamma / 45) * 20;
 
-    rotX.set(rx);
-    rotY.set(ry);
-
-    // Le balancier : on laisse la gravité agir sur le point d'attache (originY: 0)
-    // En multipliant directement la valeur brute ajustée, on obtient ce mouvement naturel gauche/droite
-    swing.set(clampedGamma * 0.8);
-  }
-
-  // Import dynamique de ton orientation manager
-  import("../../lib/orientation").then((mod) => mod).catch(() => null);
+      rotX.set(rx);
+      rotY.set(ry);
+      swing.set(clampedGamma * 0.8);
+    },
+    [rotX, rotY, swing],
+  );
 
   useEffect(() => {
     let mounted = true;
     let removed = false;
 
-    (async () => {
-      const mod = await import("../../lib/orientation");
-      if (!mounted) return;
+    import("../../lib/orientation")
+      .then((mod) => {
+        if (!mounted) return;
+        orientationManager.current = mod;
 
-      if (!mod.hasPermissionAPI()) {
-        mod.addOrientationListener(handleOrientation);
-      }
-      return;
-    })();
+        // Si l'appareil N'A PAS besoin de permission (Android, PC)
+        if (!mod.hasPermissionAPI()) {
+          mod.addOrientationListener(handleOrientation);
+          setOrientationEnabled(true);
+        } else {
+          // C'est un appareil iOS : on affiche le bouton pour demander l'accès
+          setShowPermissionButton(true);
+        }
+      })
+      .catch(() => null);
 
     return () => {
       mounted = false;
-      (async () => {
-        const mod = await import("../../lib/orientation");
-        if (!removed) {
-          mod.removeOrientationListener(handleOrientation);
-          removed = true;
-        }
-      })();
+      if (orientationManager.current && !removed) {
+        orientationManager.current.removeOrientationListener(handleOrientation);
+        removed = true;
+      }
     };
-  }, [rotX, rotY, swing]);
+  }, [handleOrientation]);
 
   async function enableOrientation() {
-    const mod = await import("../../lib/orientation");
-    console.debug("VipPass: requesting DeviceOrientation permission via shared manager...");
+    const mod = orientationManager.current;
+    if (!mod) return false;
+
     const ok = await mod.requestPermission();
-    console.debug("VipPass: shared requestPermission ->", ok);
+
     if (ok) {
       mod.addOrientationListener(handleOrientation);
       setOrientationEnabled(true);
+      setShowPermissionButton(false); // On cache le bouton une fois autorisé !
       return true;
     }
-    setOrientationEnabled(false);
     return false;
   }
-
-  const [orientationEnabled, setOrientationEnabled] = useState(false);
 
   return (
     <div className="flex flex-col items-center pt-2 pb-6" style={{ perspective: 1000 }}>
@@ -140,13 +135,6 @@ export function VipPass() {
         href="#press-kit"
         download
         onPointerMove={onMove}
-        onPointerDown={() => {
-          // Sur iOS, ce clic va naturellement trigger le popup sans bouton intermédiaire
-          enableOrientation();
-        }}
-        onClick={() => {
-          enableOrientation();
-        }}
         onPointerEnter={() => setHover(true)}
         onPointerLeave={onLeave}
         whileTap={{ scale: 0.97 }}
@@ -163,7 +151,6 @@ export function VipPass() {
         {orientationEnabled && (
           <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
         )}
-        {/* hole */}
         <div className="absolute top-2 left-1/2 -translate-x-1/2 h-3 w-10 rounded-full bg-black border border-white/10" />
 
         <div className="pt-7 pb-4 px-4">
@@ -187,12 +174,10 @@ export function VipPass() {
             <span>LCD-2026-0033</span>
           </div>
 
-          {/* barcode corrigé */}
           <div className="mt-3 flex items-start h-10 bg-white px-3 py-1.5 rounded-sm mx-auto w-fit">
             {Array.from({ length: 32 }).map((_, i) => {
               const barWidth = ((i * 13) % 3) + 1;
               const spaceWidth = ((i * 7) % 2) + 1;
-
               return (
                 <div
                   key={i}
@@ -230,6 +215,17 @@ export function VipPass() {
           }}
         />
       </motion.a>
+
+      {/* Le bouton pop-up dédié pour iOS */}
+      {showPermissionButton && (
+        <button
+          onClick={enableOrientation}
+          className="mt-6 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-mono-tech text-xs tracking-widest transition-all backdrop-blur-sm"
+          style={{ color: accent }}
+        >
+          ACTIVER LA 3D
+        </button>
+      )}
     </div>
   );
 }
