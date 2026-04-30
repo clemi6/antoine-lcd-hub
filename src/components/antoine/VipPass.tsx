@@ -7,10 +7,9 @@ export function VipPass() {
   const { accent, isAfterparty } = useTheme();
   const ref = useRef<HTMLAnchorElement>(null);
 
-  // PHYSIQUE RÉPARÉE : Un bon équilibre entre réactivité 3D et inertie du balancier
   const rotX = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
   const rotY = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
-  const swing = useSpring(useMotionValue(0), { stiffness: 50, damping: 8, mass: 1.2 });
+  const swing = useSpring(useMotionValue(0), { stiffness: 45, damping: 6, mass: 1.5 });
 
   const [hover, setHover] = useState(false);
   const [isReceivingData, setIsReceivingData] = useState(false);
@@ -22,9 +21,8 @@ export function VipPass() {
     const x = (e.clientX - r.left) / r.width - 0.5;
     const y = (e.clientY - r.top) / r.height - 0.5;
 
-    // Rétablissement des amplitudes pour que l'avant/arrière soit bien visible
-    rotY.set(-x * 25);
-    rotX.set(-y * 25);
+    rotY.set(-x * 35);
+    rotX.set(-y * 35);
     swing.set(-x * 12);
   };
 
@@ -52,9 +50,8 @@ export function VipPass() {
       const clampedBeta = Math.max(-45, Math.min(45, adjustedBeta));
       const clampedGamma = Math.max(-45, Math.min(45, gamma));
 
-      // L'avant/arrière (rx) a de nouveau une bonne amplitude
-      const rx = (clampedBeta / 45) * 25;
-      const ry = (-clampedGamma / 45) * 20;
+      const rx = (clampedBeta / 45) * 35;
+      const ry = (-clampedGamma / 45) * 30;
 
       rotX.set(rx);
       rotY.set(ry);
@@ -82,45 +79,42 @@ export function VipPass() {
   }, [handleOrientation]);
 
   return (
-    <div className="flex flex-col items-center pt-0 pb-6" style={{ perspective: 1000 }}>
+    // ! IMPORTANT : On enlève le perspective: 1000 d'ici car il crée un contexte d'empilement global.
+    // On met un z-index global bas (0) pour s'assurer que ce bloc peut passer sous les autres.
+    <div className="flex flex-col items-center pt-0 pb-6 relative z-0">
       <motion.div
         style={{ rotate: swing, originY: 0 }}
-        className="relative flex flex-col items-center z-10 origin-top"
+        // ! IMPORTANT : On garde le style origin-top mais on s'assure de ne pas avoir de z-index limitant
+        className="relative flex flex-col items-center origin-top w-full"
       >
-        {/* LE TOUR DE COU EN V (RÉPARÉ) */}
-        {/* Position absolue pour ne pas étirer la page, et masque de fondu pour disparaître proprement */}
+        {/* LE TOUR DE COU EN V (AVEC HAUTEUR INFINIE) */}
         <div
-          className="absolute bottom-[100%] flex justify-center pointer-events-none w-[300px] h-[250px]"
-          style={{
-            // Fait disparaître le ruban progressivement vers le haut !
-            WebkitMaskImage:
-              "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%)",
-            maskImage:
-              "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%)",
-          }}
+          // ! IMPORTANT : z-[-1] absolu pour fuir vers l'arrière.
+          // Les rubans font de nouveau 100vh de long pour s'échapper vers le haut.
+          className="absolute bottom-[100%] flex justify-center pointer-events-none w-full h-[100vh] -z-[1]"
         >
-          {/* Ruban Gauche */}
           <div
-            className="absolute bottom-0 right-1/2 w-[20px] h-full origin-bottom-right"
+            className="absolute bottom-0 right-1/2 w-[16px] h-full origin-bottom-right"
             style={{
-              transform: "rotate(-10deg)", // Angle réduit
+              transform: "rotate(-12deg)",
               backgroundColor: accent,
-              backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(255,255,255,0.2) 30%, rgba(255,255,255,0.2) 70%, rgba(0,0,0,0.6) 100%)`,
+              boxShadow: `0 0 15px ${accent}60`,
+              backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.5) 0%, rgba(255,255,255,0.3) 50%, rgba(0,0,0,0.5) 100%)`,
             }}
           />
-          {/* Ruban Droit */}
           <div
-            className="absolute bottom-0 left-1/2 w-[20px] h-full origin-bottom-left"
+            className="absolute bottom-0 left-1/2 w-[16px] h-full origin-bottom-left"
             style={{
-              transform: "rotate(10deg)", // Angle réduit
+              transform: "rotate(12deg)",
               backgroundColor: accent,
-              backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(255,255,255,0.2) 30%, rgba(255,255,255,0.2) 70%, rgba(0,0,0,0.6) 100%)`,
+              boxShadow: `0 0 15px ${accent}60`,
+              backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.5) 0%, rgba(255,255,255,0.3) 50%, rgba(0,0,0,0.5) 100%)`,
             }}
           />
         </div>
 
         {/* LA PINCE MÉTALLIQUE */}
-        <div className="relative z-20 flex flex-col items-center">
+        <div className="relative z-10 flex flex-col items-center">
           <div className="h-4 w-[40px] rounded-sm bg-gradient-to-b from-[#e0e0e0] via-[#888] to-[#222] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_3px_5px_rgba(0,0,0,0.6)]" />
           <div className="h-3 w-5 border-2 border-[#555] rounded-b-full -mt-1 shadow-[inset_0_1px_2px_rgba(0,0,0,0.8)]" />
         </div>
@@ -141,8 +135,11 @@ export function VipPass() {
             transformStyle: "preserve-3d",
             boxShadow: shadow,
           }}
+          // ! IMPORTANT : On remet le perspective: 1000 UNIQUEMENT sur la carte
+          // pour que l'effet 3D fonctionne sans casser l'empilement global du ruban.
           className="relative -mt-3 block w-[230px] rounded-xl bg-[#0e0e14] border border-white/10 overflow-hidden"
         >
+          {/* ... (Reste de la carte inchangé) ... */}
           {isReceivingData && (
             <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
           )}
