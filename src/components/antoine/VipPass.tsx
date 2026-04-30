@@ -7,9 +7,10 @@ export function VipPass() {
   const { accent, isAfterparty } = useTheme();
   const ref = useRef<HTMLAnchorElement>(null);
 
-  const rotX = useSpring(useMotionValue(0), { stiffness: 100, damping: 20, mass: 1 });
-  const rotY = useSpring(useMotionValue(0), { stiffness: 100, damping: 20, mass: 1 });
-  const swing = useSpring(useMotionValue(0), { stiffness: 60, damping: 12, mass: 1.2 });
+  // PHYSIQUE RÉPARÉE : Un bon équilibre entre réactivité 3D et inertie du balancier
+  const rotX = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
+  const rotY = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
+  const swing = useSpring(useMotionValue(0), { stiffness: 50, damping: 8, mass: 1.2 });
 
   const [hover, setHover] = useState(false);
   const [isReceivingData, setIsReceivingData] = useState(false);
@@ -21,9 +22,10 @@ export function VipPass() {
     const x = (e.clientX - r.left) / r.width - 0.5;
     const y = (e.clientY - r.top) / r.height - 0.5;
 
-    rotY.set(-x * 15);
-    rotX.set(-y * 10);
-    swing.set(-x * 8);
+    // Rétablissement des amplitudes pour que l'avant/arrière soit bien visible
+    rotY.set(-x * 25);
+    rotX.set(-y * 25);
+    swing.set(-x * 12);
   };
 
   const onLeave = () => {
@@ -50,12 +52,13 @@ export function VipPass() {
       const clampedBeta = Math.max(-45, Math.min(45, adjustedBeta));
       const clampedGamma = Math.max(-45, Math.min(45, gamma));
 
-      const rx = (clampedBeta / 45) * 15;
-      const ry = (-clampedGamma / 45) * 12;
+      // L'avant/arrière (rx) a de nouveau une bonne amplitude
+      const rx = (clampedBeta / 45) * 25;
+      const ry = (-clampedGamma / 45) * 20;
 
       rotX.set(rx);
       rotY.set(ry);
-      swing.set(-clampedGamma * 0.5);
+      swing.set(-clampedGamma * 0.8);
     },
     [rotX, rotY, swing],
   );
@@ -84,20 +87,32 @@ export function VipPass() {
         style={{ rotate: swing, originY: 0 }}
         className="relative flex flex-col items-center z-10 origin-top"
       >
-        {/* LE TOUR DE COU EN V (Avec -z-10 pour passer sous les autres sections) */}
-        <div className="relative h-[120px] w-full flex justify-center pointer-events-none -z-10">
+        {/* LE TOUR DE COU EN V (RÉPARÉ) */}
+        {/* Position absolue pour ne pas étirer la page, et masque de fondu pour disparaître proprement */}
+        <div
+          className="absolute bottom-[100%] flex justify-center pointer-events-none w-[300px] h-[250px]"
+          style={{
+            // Fait disparaître le ruban progressivement vers le haut !
+            WebkitMaskImage:
+              "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%)",
+            maskImage:
+              "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%)",
+          }}
+        >
+          {/* Ruban Gauche */}
           <div
-            className="absolute bottom-0 right-1/2 w-[22px] h-[100vh] origin-bottom-right"
+            className="absolute bottom-0 right-1/2 w-[20px] h-full origin-bottom-right"
             style={{
-              transform: "rotate(-15deg)",
+              transform: "rotate(-10deg)", // Angle réduit
               backgroundColor: accent,
               backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(255,255,255,0.2) 30%, rgba(255,255,255,0.2) 70%, rgba(0,0,0,0.6) 100%)`,
             }}
           />
+          {/* Ruban Droit */}
           <div
-            className="absolute bottom-0 left-1/2 w-[22px] h-[100vh] origin-bottom-left"
+            className="absolute bottom-0 left-1/2 w-[20px] h-full origin-bottom-left"
             style={{
-              transform: "rotate(15deg)",
+              transform: "rotate(10deg)", // Angle réduit
               backgroundColor: accent,
               backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(255,255,255,0.2) 30%, rgba(255,255,255,0.2) 70%, rgba(0,0,0,0.6) 100%)`,
             }}
@@ -105,8 +120,8 @@ export function VipPass() {
         </div>
 
         {/* LA PINCE MÉTALLIQUE */}
-        <div className="relative z-20 flex flex-col items-center -mt-1">
-          <div className="h-4 w-[44px] rounded-sm bg-gradient-to-b from-[#e0e0e0] via-[#888] to-[#222] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_3px_5px_rgba(0,0,0,0.6)]" />
+        <div className="relative z-20 flex flex-col items-center">
+          <div className="h-4 w-[40px] rounded-sm bg-gradient-to-b from-[#e0e0e0] via-[#888] to-[#222] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_3px_5px_rgba(0,0,0,0.6)]" />
           <div className="h-3 w-5 border-2 border-[#555] rounded-b-full -mt-1 shadow-[inset_0_1px_2px_rgba(0,0,0,0.8)]" />
         </div>
 
