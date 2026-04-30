@@ -242,14 +242,9 @@ function Releases({ accent }: { accent: string }) {
             RELEASES // CATALOG
           </span>
         </div>
-        <span className="font-mono-tech text-[10px] text-white/30">DRAG →</span>
+        <span className="font-mono-tech text-[10px] text-white/30">SWIPE →</span>
       </div>
-      <motion.div
-        drag="x"
-        dragConstraints={{ left: -((releases.length - 1.5) * 180), right: 0 }}
-        dragElastic={0.12}
-        className="flex gap-3 px-5 cursor-grab active:cursor-grabbing scrollbar-hidden"
-      >
+      <div className="flex gap-3 px-5 pb-1 carousel-scroll scrollbar-hidden snap-x snap-mandatory">
         {releases.map((r) => (
           <motion.a
             key={r.title}
@@ -257,7 +252,7 @@ function Releases({ accent }: { accent: string }) {
             whileTap={{ scale: 0.97 }}
             whileHover={{ y: -4 }}
             draggable={false}
-            className="group relative shrink-0 w-[170px]"
+            className="group relative shrink-0 w-[150px] sm:w-[170px] snap-start"
           >
             <div className="relative aspect-square overflow-hidden rounded-xl bg-[#15151c] border border-white/5">
               <img
@@ -282,7 +277,7 @@ function Releases({ accent }: { accent: string }) {
             <div className="font-mono-tech text-[10px] text-white/40 mt-1">{r.year}</div>
           </motion.a>
         ))}
-      </motion.div>
+      </div>
     </motion.section>
   );
 }
@@ -341,19 +336,14 @@ function LiveGallery({ accent }: { accent: string }) {
             LIVE & VISUALS
           </span>
         </div>
-        <span className="font-mono-tech text-[10px] text-white/30">DRAG →</span>
+        <span className="font-mono-tech text-[10px] text-white/30">SWIPE →</span>
       </div>
-      <motion.div
-        drag="x"
-        dragConstraints={{ left: -((lives.length - 1) * 320), right: 0 }}
-        dragElastic={0.12}
-        className="flex gap-3 px-5 cursor-grab active:cursor-grabbing"
-      >
+      <div className="flex gap-3 px-5 pb-1 carousel-scroll scrollbar-hidden snap-x snap-mandatory">
         {lives.map((src, i) => (
           <motion.div
             key={i}
             whileTap={{ scale: 0.98 }}
-            className="relative shrink-0 w-[320px] aspect-video overflow-hidden rounded-xl border border-white/5 bg-[#15151c]"
+            className="relative shrink-0 w-[82vw] max-w-[300px] sm:w-[320px] aspect-video overflow-hidden rounded-xl border border-white/5 bg-[#15151c] snap-start"
           >
             <img
               src={src}
@@ -369,7 +359,7 @@ function LiveGallery({ accent }: { accent: string }) {
             </div>
           </motion.div>
         ))}
-      </motion.div>
+      </div>
     </motion.section>
   );
 }

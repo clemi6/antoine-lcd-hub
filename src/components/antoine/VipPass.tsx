@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { DownloadSimple } from "@phosphor-icons/react";
 import { useTheme } from "./ThemeContext";
@@ -39,6 +39,51 @@ export function VipPass() {
   const sheenX = useTransform(rotY, (v) => v * 6);
   const sheenY = useTransform(rotX, (v) => -v * 6); // Inversé pour la physique de la lumière
 
+  // Device orientation -> map phone tilt to card rotation (mobile parallax)
+  useEffect(() => {
+    let mounted = true;
+
+    function handleOrientation(e: DeviceOrientationEvent) {
+      if (!mounted) return;
+      const beta = typeof e.beta === "number" ? e.beta : 0; // front-back
+      const gamma = typeof e.gamma === "number" ? e.gamma : 0; // left-right
+
+      // Normalize and clamp to sensible ranges
+      const clampedBeta = Math.max(-30, Math.min(30, beta));
+      const clampedGamma = Math.max(-30, Math.min(30, gamma));
+
+      // Map to rotation degrees (smaller, subtle effect)
+      const rx = (-clampedBeta / 30) * 12; // rotateX
+      const ry = (clampedGamma / 30) * 12; // rotateY
+
+      rotX.set(rx);
+      rotY.set(ry);
+      swing.set(ry / 3);
+    }
+
+    // If permission API exists (iOS), we don't auto-request here; we allow a user gesture to request it.
+    window.addEventListener("deviceorientation", handleOrientation, true as any);
+
+    return () => {
+      mounted = false;
+      window.removeEventListener("deviceorientation", handleOrientation as any, true as any);
+    };
+  }, [rotX, rotY, swing]);
+
+  // Request permission on iOS if needed — call on first user interaction
+  async function requestOrientationPermission() {
+    const anyDO = (DeviceOrientationEvent as any);
+    try {
+      if (anyDO && typeof anyDO.requestPermission === "function") {
+        const res = await anyDO.requestPermission();
+        return res === "granted";
+      }
+    } catch (e) {
+      // ignore
+    }
+    return false;
+  }
+
   return (
     <div className="flex flex-col items-center pt-2 pb-6" style={{ perspective: 1000 }}>
       {/* lanyard cord */}
@@ -66,6 +111,10 @@ export function VipPass() {
         href="#press-kit"
         download
         onPointerMove={onMove}
+        onPointerDown={() => {
+          // trigger iOS permission flow on first user interaction
+          requestOrientationPermission();
+        }}
         onPointerEnter={() => setHover(true)}
         onPointerLeave={onLeave}
         whileTap={{ scale: 0.97 }}

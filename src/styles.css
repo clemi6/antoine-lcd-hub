@@ -246,4 +246,13 @@
   .scrollbar-hidden {
     scrollbar-width: none;
   }
+
+  /* Carousel scroll behaviour: allow horizontal swipe without chaining scroll to page */
+  .carousel-scroll {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    overscroll-behavior: contain;
+    touch-action: pan-y; /* allow vertical scrolling by default; horizontal gestures handled by the element */
+  }
 }
