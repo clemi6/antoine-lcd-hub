@@ -79,11 +79,15 @@ export function VipPass() {
     const anyDO = (DeviceOrientationEvent as any);
     try {
       if (anyDO && typeof anyDO.requestPermission === "function") {
+        console.debug("VipPass: requesting DeviceOrientation permission...");
         const res = await anyDO.requestPermission();
+        console.debug("VipPass: requestPermission ->", res);
         if (res === "granted") {
           addOrientationListener();
+          setOrientationEnabled(true);
           return true;
         }
+        setOrientationEnabled(false);
         return false;
       }
     } catch (e) {
@@ -92,8 +96,11 @@ export function VipPass() {
 
     // If no permission API, ensure listener is attached
     addOrientationListener();
+    setOrientationEnabled(true);
     return true;
   }
+
+  const [orientationEnabled, setOrientationEnabled] = useState(false);
 
   return (
     <div className="flex flex-col items-center pt-2 pb-6" style={{ perspective: 1000 }}>
@@ -126,6 +133,10 @@ export function VipPass() {
           // trigger iOS permission flow on first user interaction
           enableOrientation();
         }}
+        onClick={() => {
+          // also trigger onClick to be robust across browsers
+          enableOrientation();
+        }}
         onPointerEnter={() => setHover(true)}
         onPointerLeave={onLeave}
         whileTap={{ scale: 0.97 }}
@@ -139,6 +150,10 @@ export function VipPass() {
         }}
         className="relative mt-1 block w-[230px] rounded-xl bg-[#0e0e14] border border-white/10 overflow-hidden"
       >
+        {/* small indicator when orientation is enabled */}
+        {orientationEnabled && (
+          <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+        )}
         {/* hole */}
         <div className="absolute top-2 left-1/2 -translate-x-1/2 h-3 w-10 rounded-full bg-black border border-white/10" />
 
