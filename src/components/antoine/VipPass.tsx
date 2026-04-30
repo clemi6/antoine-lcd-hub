@@ -7,11 +7,10 @@ export function VipPass() {
   const { accent, isAfterparty } = useTheme();
   const ref = useRef<HTMLAnchorElement>(null);
 
-  // PHYSIQUE AMÉLIORÉE : Damping réduit au maximum pour avoir ce bel effet de balancier/secousse
-  const rotX = useSpring(useMotionValue(0), { stiffness: 60, damping: 10, mass: 1.2 });
-  const rotY = useSpring(useMotionValue(0), { stiffness: 60, damping: 10, mass: 1.2 });
-  // Le swing (balancier global) a maintenant beaucoup plus de rebond et d'inertie
-  const swing = useSpring(useMotionValue(0), { stiffness: 45, damping: 4, mass: 1.5 });
+  // PHYSIQUE CORRIGÉE : Plus de stiffness pour un retour net, plus de damping pour éviter de flotter
+  const rotX = useSpring(useMotionValue(0), { stiffness: 100, damping: 20, mass: 1 });
+  const rotY = useSpring(useMotionValue(0), { stiffness: 100, damping: 20, mass: 1 });
+  const swing = useSpring(useMotionValue(0), { stiffness: 60, damping: 12, mass: 1.2 });
 
   const [hover, setHover] = useState(false);
   const [isReceivingData, setIsReceivingData] = useState(false);
@@ -22,10 +21,11 @@ export function VipPass() {
     const r = el.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width - 0.5;
     const y = (e.clientY - r.top) / r.height - 0.5;
-    // INVERSION SOURIS : Les signes moins corrigent le mouvement gauche/droite
-    rotY.set(-x * 25);
-    rotX.set(-y * 18);
-    swing.set(-x * 15);
+
+    // FORCE RÉDUITE : Des multiplicateurs plus doux pour la souris
+    rotY.set(-x * 15);
+    rotX.set(-y * 10);
+    swing.set(-x * 8);
   };
 
   const onLeave = () => {
@@ -52,13 +52,13 @@ export function VipPass() {
       const clampedBeta = Math.max(-45, Math.min(45, adjustedBeta));
       const clampedGamma = Math.max(-45, Math.min(45, gamma));
 
-      const rx = (clampedBeta / 45) * 25;
-      // INVERSION CAPTEURS : Le mouvement est maintenant logique par rapport à l'inclinaison
-      const ry = (-clampedGamma / 45) * 20;
+      // FORCE RÉDUITE : Des mouvements beaucoup plus subtils pour le gyroscope
+      const rx = (clampedBeta / 45) * 15;
+      const ry = (-clampedGamma / 45) * 12;
 
       rotX.set(rx);
       rotY.set(ry);
-      swing.set(-clampedGamma * 1.2);
+      swing.set(-clampedGamma * 0.5);
     },
     [rotX, rotY, swing],
   );
@@ -83,16 +83,12 @@ export function VipPass() {
 
   return (
     <div className="flex flex-col items-center pt-0 pb-6" style={{ perspective: 1000 }}>
-      {/* PENDULE GLOBAL : Ce bloc englobe les rubans, la pince ET la carte. 
-          C'est ça qui empêche les éléments de se détacher ! */}
       <motion.div
         style={{ rotate: swing, originY: 0 }}
         className="relative flex flex-col items-center z-10 origin-top"
       >
-        {/* 1. LE TOUR DE COU EN V */}
-        {/* Hauteur de 120px pour simuler la distance entre la poitrine et le cou */}
+        {/* LE TOUR DE COU EN V */}
         <div className="relative h-[120px] w-full flex justify-center pointer-events-none">
-          {/* Ruban Gauche (part en biais vers le haut à l'infini) */}
           <div
             className="absolute bottom-0 right-1/2 w-[22px] h-[100vh] origin-bottom-right"
             style={{
@@ -101,7 +97,6 @@ export function VipPass() {
               backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(255,255,255,0.2) 30%, rgba(255,255,255,0.2) 70%, rgba(0,0,0,0.6) 100%)`,
             }}
           />
-          {/* Ruban Droit (part en biais vers le haut à l'infini) */}
           <div
             className="absolute bottom-0 left-1/2 w-[22px] h-[100vh] origin-bottom-left"
             style={{
@@ -112,15 +107,13 @@ export function VipPass() {
           />
         </div>
 
-        {/* 2. LA PINCE MÉTALLIQUE */}
+        {/* LA PINCE MÉTALLIQUE */}
         <div className="relative z-20 flex flex-col items-center -mt-1">
-          {/* Base de la pince (Pile poil la largeur des 2 rubans = 44px) */}
           <div className="h-4 w-[44px] rounded-sm bg-gradient-to-b from-[#e0e0e0] via-[#888] to-[#222] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_3px_5px_rgba(0,0,0,0.6)]" />
-          {/* Anneau qui rentre dans la carte */}
           <div className="h-3 w-5 border-2 border-[#555] rounded-b-full -mt-1 shadow-[inset_0_1px_2px_rgba(0,0,0,0.8)]" />
         </div>
 
-        {/* 3. LA CARTE VIP (inchangée) */}
+        {/* LA CARTE VIP */}
         <motion.a
           ref={ref}
           href="#press-kit"
@@ -132,7 +125,6 @@ export function VipPass() {
           style={{
             rotateX: rotX,
             rotateY: rotY,
-            // J'ai enlevé 'rotate: swing' de la carte, puisqu'elle tourne avec le groupe !
             originY: 0,
             transformStyle: "preserve-3d",
             boxShadow: shadow,
@@ -143,7 +135,6 @@ export function VipPass() {
             <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
           )}
 
-          {/* Trou pour la pince */}
           <div className="absolute top-2 left-1/2 -translate-x-1/2 h-3 w-10 rounded-full bg-black border border-white/10 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]" />
 
           <div className="pt-8 pb-4 px-4">
