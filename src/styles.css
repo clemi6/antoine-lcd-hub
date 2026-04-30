@@ -253,6 +253,6 @@
     overflow-x: auto;
     overscroll-behavior-x: contain;
     overscroll-behavior: contain;
-    touch-action: pan-y; /* allow vertical scrolling by default; horizontal gestures handled by the element */
+    touch-action: pan-x; /* allow horizontal swipe on the carousel */
   }
 }

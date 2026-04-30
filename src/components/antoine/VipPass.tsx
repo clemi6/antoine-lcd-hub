@@ -38,50 +38,61 @@ export function VipPass() {
   // On multiplie par 6 pour que le reflet balaye bien toute la carte
   const sheenX = useTransform(rotY, (v) => v * 6);
   const sheenY = useTransform(rotX, (v) => -v * 6); // Inversé pour la physique de la lumière
-
   // Device orientation -> map phone tilt to card rotation (mobile parallax)
+  function handleOrientation(e: DeviceOrientationEvent) {
+    const beta = typeof e.beta === "number" ? e.beta : 0; // front-back
+    const gamma = typeof e.gamma === "number" ? e.gamma : 0; // left-right
+
+    // Normalize and clamp to sensible ranges
+    const clampedBeta = Math.max(-30, Math.min(30, beta));
+    const clampedGamma = Math.max(-30, Math.min(30, gamma));
+
+    // Map to rotation degrees (smaller, subtle effect)
+    const rx = (-clampedBeta / 30) * 12; // rotateX
+    const ry = (clampedGamma / 30) * 12; // rotateY
+
+    rotX.set(rx);
+    rotY.set(ry);
+    swing.set(ry / 3);
+  }
+
+  const addOrientationListener = () =>
+    window.addEventListener("deviceorientation", handleOrientation as any, true as any);
+  const removeOrientationListener = () =>
+    window.removeEventListener("deviceorientation", handleOrientation as any, true as any);
+
   useEffect(() => {
-    let mounted = true;
+    const anyDO = (DeviceOrientationEvent as any);
 
-    function handleOrientation(e: DeviceOrientationEvent) {
-      if (!mounted) return;
-      const beta = typeof e.beta === "number" ? e.beta : 0; // front-back
-      const gamma = typeof e.gamma === "number" ? e.gamma : 0; // left-right
-
-      // Normalize and clamp to sensible ranges
-      const clampedBeta = Math.max(-30, Math.min(30, beta));
-      const clampedGamma = Math.max(-30, Math.min(30, gamma));
-
-      // Map to rotation degrees (smaller, subtle effect)
-      const rx = (-clampedBeta / 30) * 12; // rotateX
-      const ry = (clampedGamma / 30) * 12; // rotateY
-
-      rotX.set(rx);
-      rotY.set(ry);
-      swing.set(ry / 3);
+    // On platforms that require an explicit permission request (iOS), do not attach listener automatically.
+    if (!(anyDO && typeof anyDO.requestPermission === "function")) {
+      addOrientationListener();
     }
 
-    // If permission API exists (iOS), we don't auto-request here; we allow a user gesture to request it.
-    window.addEventListener("deviceorientation", handleOrientation, true as any);
-
     return () => {
-      mounted = false;
-      window.removeEventListener("deviceorientation", handleOrientation as any, true as any);
+      removeOrientationListener();
     };
   }, [rotX, rotY, swing]);
 
   // Request permission on iOS if needed — call on first user interaction
-  async function requestOrientationPermission() {
+  async function enableOrientation() {
     const anyDO = (DeviceOrientationEvent as any);
     try {
       if (anyDO && typeof anyDO.requestPermission === "function") {
         const res = await anyDO.requestPermission();
-        return res === "granted";
+        if (res === "granted") {
+          addOrientationListener();
+          return true;
+        }
+        return false;
       }
     } catch (e) {
       // ignore
     }
-    return false;
+
+    // If no permission API, ensure listener is attached
+    addOrientationListener();
+    return true;
   }
 
   return (
@@ -113,7 +124,7 @@ export function VipPass() {
         onPointerMove={onMove}
         onPointerDown={() => {
           // trigger iOS permission flow on first user interaction
-          requestOrientationPermission();
+          enableOrientation();
         }}
         onPointerEnter={() => setHover(true)}
         onPointerLeave={onLeave}
