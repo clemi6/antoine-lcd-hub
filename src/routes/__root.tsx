@@ -1,6 +1,4 @@
-import { Outlet, Link, createRootRoute, HeadContent } from "@tanstack/react-router";
-
-import appCss from "../styles.css?url";
+import { Outlet, Link, createRootRoute } from "@tanstack/react-router";
 
 function NotFoundComponent() {
   return (
@@ -25,35 +23,10 @@ function NotFoundComponent() {
 }
 
 export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "ANTOINE LCD — Techno DJ & Producer" },
-      { name: "description", content: "Official links for ANTOINE LCD. Listen to releases, watch live sets, get tour tickets and press kit." },
-      { name: "author", content: "ANTOINE LCD" },
-      { property: "og:title", content: "ANTOINE LCD — Techno DJ & Producer" },
-      { property: "og:description", content: "Releases, live shows, and tour dates from techno producer ANTOINE LCD." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-    ],
-    links: [
-      {
-        rel: "stylesheet",
-      },
-    ],
-  }),
-  shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
 });
 
 function RootComponent() {
-  return (
-    <>
-      <HeadContent />
-      <Outlet />
-    </>
-  );
+  return <Outlet />;
 }
