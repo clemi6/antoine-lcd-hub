@@ -7,7 +7,6 @@ export function VipPass() {
   const { accent, isAfterparty } = useTheme();
   const ref = useRef<HTMLAnchorElement>(null);
 
-  // PHYSIQUE CORRIGÉE : Plus de stiffness pour un retour net, plus de damping pour éviter de flotter
   const rotX = useSpring(useMotionValue(0), { stiffness: 100, damping: 20, mass: 1 });
   const rotY = useSpring(useMotionValue(0), { stiffness: 100, damping: 20, mass: 1 });
   const swing = useSpring(useMotionValue(0), { stiffness: 60, damping: 12, mass: 1.2 });
@@ -22,7 +21,6 @@ export function VipPass() {
     const x = (e.clientX - r.left) / r.width - 0.5;
     const y = (e.clientY - r.top) / r.height - 0.5;
 
-    // FORCE RÉDUITE : Des multiplicateurs plus doux pour la souris
     rotY.set(-x * 15);
     rotX.set(-y * 10);
     swing.set(-x * 8);
@@ -52,7 +50,6 @@ export function VipPass() {
       const clampedBeta = Math.max(-45, Math.min(45, adjustedBeta));
       const clampedGamma = Math.max(-45, Math.min(45, gamma));
 
-      // FORCE RÉDUITE : Des mouvements beaucoup plus subtils pour le gyroscope
       const rx = (clampedBeta / 45) * 15;
       const ry = (-clampedGamma / 45) * 12;
 
@@ -87,8 +84,8 @@ export function VipPass() {
         style={{ rotate: swing, originY: 0 }}
         className="relative flex flex-col items-center z-10 origin-top"
       >
-        {/* LE TOUR DE COU EN V */}
-        <div className="relative h-[120px] w-full flex justify-center pointer-events-none">
+        {/* LE TOUR DE COU EN V (Avec -z-10 pour passer sous les autres sections) */}
+        <div className="relative h-[120px] w-full flex justify-center pointer-events-none -z-10">
           <div
             className="absolute bottom-0 right-1/2 w-[22px] h-[100vh] origin-bottom-right"
             style={{
