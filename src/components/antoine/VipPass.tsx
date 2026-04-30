@@ -56,48 +56,50 @@ export function VipPass() {
     swing.set(ry / 3);
   }
 
-  const addOrientationListener = () =>
-    window.addEventListener("deviceorientation", handleOrientation as any, true as any);
-  const removeOrientationListener = () =>
-    window.removeEventListener("deviceorientation", handleOrientation as any, true as any);
+  // Use the shared orientation manager to attach/detach listeners and request permission
+  import("../../lib/orientation").then((mod) => mod).catch(() => null);
 
   useEffect(() => {
-    const anyDO = (DeviceOrientationEvent as any);
+    let mounted = true;
+    let removed = false;
 
-    // On platforms that require an explicit permission request (iOS), do not attach listener automatically.
-    if (!(anyDO && typeof anyDO.requestPermission === "function")) {
-      addOrientationListener();
-    }
+    (async () => {
+      const mod = await import("../../lib/orientation");
+      if (!mounted) return;
+
+      // If platform doesn't require explicit permission, the manager will already be considered granted and will attach automatically.
+      if (!mod.hasPermissionAPI()) {
+        mod.addOrientationListener(handleOrientation);
+      }
+
+      return;
+    })();
 
     return () => {
-      removeOrientationListener();
+      mounted = false;
+      (async () => {
+        const mod = await import("../../lib/orientation");
+        if (!removed) {
+          mod.removeOrientationListener(handleOrientation);
+          removed = true;
+        }
+      })();
     };
   }, [rotX, rotY, swing]);
 
   // Request permission on iOS if needed — call on first user interaction
   async function enableOrientation() {
-    const anyDO = (DeviceOrientationEvent as any);
-    try {
-      if (anyDO && typeof anyDO.requestPermission === "function") {
-        console.debug("VipPass: requesting DeviceOrientation permission...");
-        const res = await anyDO.requestPermission();
-        console.debug("VipPass: requestPermission ->", res);
-        if (res === "granted") {
-          addOrientationListener();
-          setOrientationEnabled(true);
-          return true;
-        }
-        setOrientationEnabled(false);
-        return false;
-      }
-    } catch (e) {
-      // ignore
+    const mod = await import("../../lib/orientation");
+    console.debug("VipPass: requesting DeviceOrientation permission via shared manager...");
+    const ok = await mod.requestPermission();
+    console.debug("VipPass: shared requestPermission ->", ok);
+    if (ok) {
+      mod.addOrientationListener(handleOrientation);
+      setOrientationEnabled(true);
+      return true;
     }
-
-    // If no permission API, ensure listener is attached
-    addOrientationListener();
-    setOrientationEnabled(true);
-    return true;
+    setOrientationEnabled(false);
+    return false;
   }
 
   const [orientationEnabled, setOrientationEnabled] = useState(false);
