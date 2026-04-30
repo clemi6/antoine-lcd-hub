@@ -14,7 +14,6 @@ export function VipPass() {
   const [hover, setHover] = useState(false);
   const [isReceivingData, setIsReceivingData] = useState(false);
 
-  // Mémoire pour le point zéro de l'inclinaison du téléphone
   const initialOrientation = useRef<{ beta: null | number; gamma: null | number }>({
     beta: null,
     gamma: null,
@@ -49,26 +48,21 @@ export function VipPass() {
 
       setIsReceivingData((prev) => (prev ? prev : true));
 
-      // 1. Initialisation du point zéro lors du premier mouvement
       if (initialOrientation.current.beta === null) {
         initialOrientation.current = { beta: e.beta, gamma: e.gamma };
         return;
       }
 
-      // 2. Calcul du delta (différence par rapport à la position de base)
       let deltaBeta = e.beta - (initialOrientation.current.beta ?? 0);
       let deltaGamma = e.gamma - (initialOrientation.current.gamma ?? 0);
 
-      // Limite l'amplitude maximale
       const maxTilt = 30;
       deltaBeta = Math.max(-maxTilt, Math.min(maxTilt, deltaBeta));
       deltaGamma = Math.max(-maxTilt, Math.min(maxTilt, deltaGamma));
 
-      // 3. Mapping des valeurs pour simuler les coordonnées de la souris
       const simulatedMouseY = deltaBeta / maxTilt;
       const simulatedMouseX = deltaGamma / maxTilt;
 
-      // 4. Application aux multiplicateurs (identiques à 'onMove')
       rotY.set(-simulatedMouseX * 35);
       rotX.set(-simulatedMouseY * 35);
       swing.set(-simulatedMouseX * 12);
@@ -103,14 +97,16 @@ export function VipPass() {
         style={{ rotate: swing, originY: 0 }}
         className="relative flex flex-col items-center origin-top w-full"
       >
-        {/* LE TOUR DE COU EN V (FIXÉ) */}
+        {/* LE TOUR DE COU EN V (FONDU ULTRA DOUX) */}
         <div
           className="relative flex justify-center pointer-events-none w-[200px] h-[150px] -mb-5 -z-10"
           style={{
+            // MODIFICATION ICI : Il est solide de 0 à 10%, puis s'efface totalement à 80%.
+            // Les 20% restants de la div sont invisibles, garantissant qu'aucune ligne droite ne s'affiche.
             WebkitMaskImage:
-              "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)",
+              "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 80%)",
             maskImage:
-              "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)",
+              "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 80%)",
           }}
         >
           {/* Ruban Gauche */}
