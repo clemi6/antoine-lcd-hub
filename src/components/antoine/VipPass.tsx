@@ -10,12 +10,9 @@ export function VipPass() {
   const rotY = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
   const swing = useSpring(useMotionValue(0), { stiffness: 40, damping: 8, mass: 1.5 });
   const [hover, setHover] = useState(false);
-  const [orientationEnabled, setOrientationEnabled] = useState(false);
 
-  // État pour savoir si on doit afficher le bouton d'autorisation (uniquement pour iOS)
-  const [showPermissionButton, setShowPermissionButton] = useState(false);
-
-  const orientationManager = useRef(null);
+  // État pour allumer la petite LED verte uniquement quand on reçoit des données
+  const [isReceivingData, setIsReceivingData] = useState(false);
 
   const onMove = (e: React.PointerEvent) => {
     const el = ref.current;
@@ -42,10 +39,12 @@ export function VipPass() {
   const sheenX = useTransform(rotY, (v) => v * 6);
   const sheenY = useTransform(rotX, (v) => -v * 6);
 
-  // Utilisation de useCallback pour éviter les avertissements ESLint dans le useEffect
   const handleOrientation = useCallback(
     (e: DeviceOrientationEvent) => {
       if (e.beta === null || e.gamma === null) return;
+
+      // Active la LED verte à la première donnée reçue (optimisé pour éviter les re-rendus)
+      setIsReceivingData((prev) => (prev ? prev : true));
 
       const beta = e.beta;
       const gamma = e.gamma;
@@ -66,47 +65,22 @@ export function VipPass() {
 
   useEffect(() => {
     let mounted = true;
-    let removed = false;
 
+    // On se contente d'ajouter l'écouteur. Les permissions sont gérées par le pop-up global !
     import("../../lib/orientation")
       .then((mod) => {
         if (!mounted) return;
-        orientationManager.current = mod;
-
-        // Si l'appareil N'A PAS besoin de permission (Android, PC)
-        if (!mod.hasPermissionAPI()) {
-          mod.addOrientationListener(handleOrientation);
-          setOrientationEnabled(true);
-        } else {
-          // C'est un appareil iOS : on affiche le bouton pour demander l'accès
-          setShowPermissionButton(true);
-        }
+        mod.addOrientationListener(handleOrientation);
       })
       .catch(() => null);
 
     return () => {
       mounted = false;
-      if (orientationManager.current && !removed) {
-        orientationManager.current.removeOrientationListener(handleOrientation);
-        removed = true;
-      }
+      import("../../lib/orientation").then((mod) => {
+        mod.removeOrientationListener(handleOrientation);
+      });
     };
   }, [handleOrientation]);
-
-  async function enableOrientation() {
-    const mod = orientationManager.current;
-    if (!mod) return false;
-
-    const ok = await mod.requestPermission();
-
-    if (ok) {
-      mod.addOrientationListener(handleOrientation);
-      setOrientationEnabled(true);
-      setShowPermissionButton(false); // On cache le bouton une fois autorisé !
-      return true;
-    }
-    return false;
-  }
 
   return (
     <div className="flex flex-col items-center pt-2 pb-6" style={{ perspective: 1000 }}>
@@ -148,9 +122,11 @@ export function VipPass() {
         }}
         className="relative mt-1 block w-[230px] rounded-xl bg-[#0e0e14] border border-white/10 overflow-hidden"
       >
-        {orientationEnabled && (
+        {/* La LED verte qui s'allume quand les capteurs fonctionnent */}
+        {isReceivingData && (
           <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
         )}
+
         <div className="absolute top-2 left-1/2 -translate-x-1/2 h-3 w-10 rounded-full bg-black border border-white/10" />
 
         <div className="pt-7 pb-4 px-4">
@@ -215,17 +191,6 @@ export function VipPass() {
           }}
         />
       </motion.a>
-
-      {/* Le bouton pop-up dédié pour iOS */}
-      {showPermissionButton && (
-        <button
-          onClick={enableOrientation}
-          className="mt-6 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-mono-tech text-xs tracking-widest transition-all backdrop-blur-sm"
-          style={{ color: accent }}
-        >
-          ACTIVER LA 3D
-        </button>
-      )}
     </div>
   );
 }
