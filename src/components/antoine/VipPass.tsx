@@ -6,12 +6,13 @@ import { useTheme } from "./ThemeContext";
 export function VipPass() {
   const { accent, isAfterparty } = useTheme();
   const ref = useRef<HTMLAnchorElement>(null);
-  const rotX = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
-  const rotY = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
-  const swing = useSpring(useMotionValue(0), { stiffness: 40, damping: 8, mass: 1.5 });
-  const [hover, setHover] = useState(false);
 
-  // État pour allumer la petite LED verte uniquement quand on reçoit des données
+  // PHYSIQUE AMÉLIORÉE : Damping réduit et masse augmentée pour un effet "secousse/pendule" réaliste
+  const rotX = useSpring(useMotionValue(0), { stiffness: 60, damping: 10, mass: 1.2 });
+  const rotY = useSpring(useMotionValue(0), { stiffness: 60, damping: 10, mass: 1.2 });
+  const swing = useSpring(useMotionValue(0), { stiffness: 35, damping: 5, mass: 1.8 }); // Plus d'inertie ici !
+
+  const [hover, setHover] = useState(false);
   const [isReceivingData, setIsReceivingData] = useState(false);
 
   const onMove = (e: React.PointerEvent) => {
@@ -20,9 +21,10 @@ export function VipPass() {
     const r = el.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width - 0.5;
     const y = (e.clientY - r.top) / r.height - 0.5;
-    rotY.set(x * 25);
+    // INVERSION SOURIS : On inverse le X pour que la rotation soit logique
+    rotY.set(-x * 25);
     rotX.set(-y * 18);
-    swing.set(x * 12);
+    swing.set(-x * 15);
   };
 
   const onLeave = () => {
@@ -32,18 +34,14 @@ export function VipPass() {
     setHover(false);
   };
 
-  const shadow = useTransform(
-    rotY,
-    (v) => `${-v / 2}px ${20 + Math.abs(v)}px 40px rgba(0,0,0,0.6)`,
-  );
-  const sheenX = useTransform(rotY, (v) => v * 6);
+  const shadow = useTransform(rotY, (v) => `${v / 2}px ${20 + Math.abs(v)}px 40px rgba(0,0,0,0.6)`);
+  const sheenX = useTransform(rotY, (v) => -v * 6);
   const sheenY = useTransform(rotX, (v) => -v * 6);
 
   const handleOrientation = useCallback(
     (e: DeviceOrientationEvent) => {
       if (e.beta === null || e.gamma === null) return;
 
-      // Active la LED verte à la première donnée reçue (optimisé pour éviter les re-rendus)
       setIsReceivingData((prev) => (prev ? prev : true));
 
       const beta = e.beta;
@@ -54,11 +52,13 @@ export function VipPass() {
       const clampedGamma = Math.max(-45, Math.min(45, gamma));
 
       const rx = (clampedBeta / 45) * 25;
-      const ry = (clampedGamma / 45) * 20;
+      // INVERSION CAPTEURS : On ajoute un signe moins devant clampedGamma
+      const ry = (-clampedGamma / 45) * 20;
 
       rotX.set(rx);
       rotY.set(ry);
-      swing.set(clampedGamma * 0.8);
+      // On inverse aussi le balancier pour suivre la gravité naturelle
+      swing.set(-clampedGamma * 1.2);
     },
     [rotX, rotY, swing],
   );
@@ -66,7 +66,6 @@ export function VipPass() {
   useEffect(() => {
     let mounted = true;
 
-    // On se contente d'ajouter l'écouteur. Les permissions sont gérées par le pop-up global !
     import("../../lib/orientation")
       .then((mod) => {
         if (!mounted) return;
@@ -83,27 +82,28 @@ export function VipPass() {
   }, [handleOrientation]);
 
   return (
-    <div className="flex flex-col items-center pt-2 pb-6" style={{ perspective: 1000 }}>
-      {/* lanyard cord */}
-      <div className="relative h-16 w-2 overflow-hidden">
-        <motion.div
-          style={{ rotate: swing, originY: 0 }}
-          className="absolute inset-x-0 top-0 h-full"
-        >
-          <div
-            className="h-full w-full"
-            style={{
-              background: "repeating-linear-gradient(180deg, #2a2a30 0 6px, #15151c 6px 8px)",
-            }}
-          />
-        </motion.div>
-      </div>
-
-      {/* clip */}
-      <motion.div style={{ rotate: swing, originY: 0 }} className="-mt-1">
-        <div className="h-3 w-10 rounded-sm bg-gradient-to-b from-[#888] via-[#444] to-[#222] shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]" />
+    <div className="flex flex-col items-center pt-0 pb-6" style={{ perspective: 1000 }}>
+      {/* NOUVEAU DESIGN : Lanyard = Ruban texturé + Pince en métal */}
+      <motion.div
+        style={{ rotate: swing, originY: 0 }}
+        className="relative flex flex-col items-center z-10 h-[88px] origin-top"
+      >
+        {/* Le ruban en tissu à la couleur de l'accent */}
+        <div
+          className="h-[70px] w-7 shadow-md"
+          style={{
+            backgroundColor: accent,
+            // Effet d'ombrage cylindrique pour donner un aspect tissu/satin
+            backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.4) 0%, rgba(255,255,255,0.15) 30%, rgba(255,255,255,0.15) 70%, rgba(0,0,0,0.4) 100%)`,
+          }}
+        />
+        {/* La grosse pince métallique */}
+        <div className="h-4 w-10 -mt-1 rounded-sm bg-gradient-to-b from-[#e0e0e0] via-[#888] to-[#222] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_3px_5px_rgba(0,0,0,0.6)] z-20" />
+        {/* L'anneau de connexion qui passe dans le trou de la carte */}
+        <div className="h-3 w-5 border-2 border-[#555] rounded-b-full -mt-1 z-0 shadow-inner" />
       </motion.div>
 
+      {/* LA CARTE VIP (inchangée, mais alignée parfaitement avec la pince) */}
       <motion.a
         ref={ref}
         href="#press-kit"
@@ -120,16 +120,17 @@ export function VipPass() {
           transformStyle: "preserve-3d",
           boxShadow: shadow,
         }}
-        className="relative mt-1 block w-[230px] rounded-xl bg-[#0e0e14] border border-white/10 overflow-hidden"
+        // On remonte légèrement la carte pour que l'anneau morde dans le trou (-mt-3)
+        className="relative -mt-3 block w-[230px] rounded-xl bg-[#0e0e14] border border-white/10 overflow-hidden"
       >
-        {/* La LED verte qui s'allume quand les capteurs fonctionnent */}
         {isReceivingData && (
           <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
         )}
 
-        <div className="absolute top-2 left-1/2 -translate-x-1/2 h-3 w-10 rounded-full bg-black border border-white/10" />
+        {/* Le trou pour la pince */}
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 h-3 w-10 rounded-full bg-black border border-white/10 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]" />
 
-        <div className="pt-7 pb-4 px-4">
+        <div className="pt-8 pb-4 px-4">
           <div
             className="font-mono-tech text-[8px] tracking-[0.4em] text-center"
             style={{ color: accent }}
