@@ -14,6 +14,12 @@ export function VipPass() {
   const [hover, setHover] = useState(false);
   const [isReceivingData, setIsReceivingData] = useState(false);
 
+  // Mémoire pour le point zéro de l'inclinaison du téléphone
+  const initialOrientation = useRef<{ beta: null | number; gamma: null | number }>({
+    beta: null,
+    gamma: null,
+  });
+
   const onMove = (e: React.PointerEvent) => {
     const el = ref.current;
     if (!el) return;
@@ -43,19 +49,29 @@ export function VipPass() {
 
       setIsReceivingData((prev) => (prev ? prev : true));
 
-      const beta = e.beta;
-      const gamma = e.gamma;
+      // 1. Initialisation du point zéro lors du premier mouvement
+      if (initialOrientation.current.beta === null) {
+        initialOrientation.current = { beta: e.beta, gamma: e.gamma };
+        return;
+      }
 
-      const adjustedBeta = beta - 60;
-      const clampedBeta = Math.max(-45, Math.min(45, adjustedBeta));
-      const clampedGamma = Math.max(-45, Math.min(45, gamma));
+      // 2. Calcul du delta (différence par rapport à la position de base)
+      let deltaBeta = e.beta - (initialOrientation.current.beta ?? 0);
+      let deltaGamma = e.gamma - (initialOrientation.current.gamma ?? 0);
 
-      const rx = (clampedBeta / 45) * 35;
-      const ry = (-clampedGamma / 45) * 30;
+      // Limite l'amplitude maximale
+      const maxTilt = 30;
+      deltaBeta = Math.max(-maxTilt, Math.min(maxTilt, deltaBeta));
+      deltaGamma = Math.max(-maxTilt, Math.min(maxTilt, deltaGamma));
 
-      rotX.set(rx);
-      rotY.set(ry);
-      swing.set(-clampedGamma * 0.8);
+      // 3. Mapping des valeurs pour simuler les coordonnées de la souris
+      const simulatedMouseY = deltaBeta / maxTilt;
+      const simulatedMouseX = deltaGamma / maxTilt;
+
+      // 4. Application aux multiplicateurs (identiques à 'onMove')
+      rotY.set(-simulatedMouseX * 35);
+      rotX.set(-simulatedMouseY * 35);
+      swing.set(-simulatedMouseX * 12);
     },
     [rotX, rotY, swing],
   );
@@ -79,20 +95,25 @@ export function VipPass() {
   }, [handleOrientation]);
 
   return (
-    // ! IMPORTANT : On enlève le perspective: 1000 d'ici car il crée un contexte d'empilement global.
-    // On met un z-index global bas (0) pour s'assurer que ce bloc peut passer sous les autres.
-    <div className="flex flex-col items-center pt-0 pb-6 relative z-0">
+    <div
+      className="flex flex-col items-center pt-0 pb-6 relative z-0"
+      style={{ perspective: 1000 }}
+    >
       <motion.div
         style={{ rotate: swing, originY: 0 }}
-        // ! IMPORTANT : On garde le style origin-top mais on s'assure de ne pas avoir de z-index limitant
         className="relative flex flex-col items-center origin-top w-full"
       >
-        {/* LE TOUR DE COU EN V (AVEC HAUTEUR INFINIE) */}
+        {/* LE TOUR DE COU EN V (FIXÉ) */}
         <div
-          // ! IMPORTANT : z-[-1] absolu pour fuir vers l'arrière.
-          // Les rubans font de nouveau 100vh de long pour s'échapper vers le haut.
-          className="absolute bottom-[100%] flex justify-center pointer-events-none w-full h-[100vh] -z-[1]"
+          className="relative flex justify-center pointer-events-none w-[200px] h-[150px] -mb-5 -z-10"
+          style={{
+            WebkitMaskImage:
+              "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)",
+            maskImage:
+              "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)",
+          }}
         >
+          {/* Ruban Gauche */}
           <div
             className="absolute bottom-0 right-1/2 w-[16px] h-full origin-bottom-right"
             style={{
@@ -102,6 +123,7 @@ export function VipPass() {
               backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.5) 0%, rgba(255,255,255,0.3) 50%, rgba(0,0,0,0.5) 100%)`,
             }}
           />
+          {/* Ruban Droit */}
           <div
             className="absolute bottom-0 left-1/2 w-[16px] h-full origin-bottom-left"
             style={{
@@ -135,11 +157,8 @@ export function VipPass() {
             transformStyle: "preserve-3d",
             boxShadow: shadow,
           }}
-          // ! IMPORTANT : On remet le perspective: 1000 UNIQUEMENT sur la carte
-          // pour que l'effet 3D fonctionne sans casser l'empilement global du ruban.
           className="relative -mt-3 block w-[230px] rounded-xl bg-[#0e0e14] border border-white/10 overflow-hidden"
         >
-          {/* ... (Reste de la carte inchangé) ... */}
           {isReceivingData && (
             <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
           )}
