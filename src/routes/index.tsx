@@ -2,17 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  InstagramLogo,
-  SoundcloudLogo,
-  TiktokLogo,
-  YoutubeLogo,
   Play,
   ShoppingBag,
   ArrowRight,
 } from "@phosphor-icons/react";
-import { ThemeProvider, useTheme } from "@/components/antoine/ThemeContext";
-import { SpinToEnter } from "@/components/antoine/SpinToEnter";
-import { MixerToggle } from "@/components/antoine/MixerToggle";
+import { Hero } from "@/components/antoine/Hero";
+import { SocialLinks } from "@/components/antoine/SocialLinks";
 import { StrobeLayer, useStrobe, useGlitch } from "@/components/antoine/GlitchStrobe";
 import { VipPass } from "@/components/antoine/VipPass";
 import profileImg from "@/assets/antoine-profile.jpg";
@@ -29,12 +24,11 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+const ACCENT = "#00ffcc";
+const ACCENT_RGB = "0,255,204";
+
 function Index() {
-  return (
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
-  );
+  return <App />;
 }
 
 const releases = [
@@ -52,24 +46,18 @@ const tour = [
 
 function App() {
   const [entered, setEntered] = useState(false);
-  const { isAfterparty, accent, accentRgb } = useTheme();
   const strobe = useStrobe();
 
   return (
-    <div
-      className="relative min-h-screen w-full transition-colors duration-700"
-      style={{
-        background: isAfterparty
-          ? "radial-gradient(ellipse at top, #2a0008 0%, #100004 50%, #050001 100%)"
-          : "radial-gradient(ellipse at top, #1a1a24 0%, #0d0d12 60%, #050506 100%)",
-      }}
-    >
-      {isAfterparty && <div className="noise-overlay" aria-hidden />}
+    <div className="relative min-h-screen w-full bg-[radial-gradient(ellipse_at_top,#1a1a24_0%,#0d0d12_60%,#050506_100%)] transition-colors duration-700">
       <StrobeLayer active={strobe.active} />
-      <SpinToEnter onEnter={() => setEntered(true)} />
+      <Hero title="ANTOINE LCD" onEnter={() => setEntered(true)} />
 
-      <main className="mx-auto w-full max-w-[480px] px-5 pb-24 pt-3">
-        <MixerToggle />
+      <main
+        className={`relative z-10 mx-auto w-full max-w-120 px-5 pb-24 pt-3 transition-opacity duration-700 ${
+          entered ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+      >
 
         <AnimatePresence>
           {entered && (
@@ -82,12 +70,12 @@ function App() {
               }}
             >
               <Header />
-              <Socials />
-              <BiggestHit accent={accent} accentRgb={accentRgb} strobe={strobe.trigger} />
-              <Releases accent={accent} />
-              <AudioBlock accent={accent} />
-              <LiveGallery accent={accent} />
-              <TourDates accent={accent} accentRgb={accentRgb} strobe={strobe.trigger} />
+              <SocialLinks />
+              <BiggestHit accent={ACCENT} accentRgb={ACCENT_RGB} strobe={strobe.trigger} />
+              <Releases accent={ACCENT} />
+              <AudioBlock accent={ACCENT} />
+              <LiveGallery accent={ACCENT} />
+              <TourDates accent={ACCENT} accentRgb={ACCENT_RGB} strobe={strobe.trigger} />
               <PressKit />
               <Footer />
             </motion.div>
@@ -108,13 +96,12 @@ const item = {
 };
 
 function Header() {
-  const { accent } = useTheme();
   return (
     <motion.header variants={item} className="flex flex-col items-center text-center pt-4 pb-6">
       <div
-        className="relative h-[110px] w-[110px] rounded-full p-[2px]"
+        className="relative h-27.5 w-27.5 rounded-full p-0.5"
         style={{
-          background: `conic-gradient(from 180deg, ${accent}, transparent 60%, ${accent})`,
+          background: `conic-gradient(from 180deg, ${ACCENT}, transparent 60%, ${ACCENT})`,
         }}
       >
         <img
@@ -126,43 +113,14 @@ function Header() {
         />
       </div>
       <h1 className="font-display text-white text-[64px] leading-[0.9] mt-5">ANTOINE LCD</h1>
-      <div className="font-mono-tech text-[10px] tracking-[0.4em] mt-2" style={{ color: accent }}>
+      <div className="font-mono-tech text-[10px] tracking-[0.4em] mt-2" style={{ color: ACCENT }}>
         TECHNO · HARDWARE · LIVE
       </div>
-      <p className="font-sans text-sm text-white/60 mt-3 max-w-[300px] leading-relaxed">
+      <p className="font-sans text-sm text-white/60 mt-3 max-w-75 leading-relaxed">
         Industrial techno from the underground. Modular hardware sets, blood-pressure BPM, no
         laptops on the booth.
       </p>
     </motion.header>
-  );
-}
-
-function Socials() {
-  const socials = [
-    { Icon: InstagramLogo, href: "https://instagram.com", label: "Instagram" },
-    { Icon: SoundcloudLogo, href: "https://soundcloud.com", label: "SoundCloud" },
-    { Icon: TiktokLogo, href: "https://tiktok.com", label: "TikTok" },
-    { Icon: YoutubeLogo, href: "https://youtube.com", label: "YouTube" },
-  ];
-  const { accent } = useTheme();
-  return (
-    <motion.div variants={item} className="flex justify-center gap-3 pb-6">
-      {socials.map(({ Icon, href, label }) => (
-        <motion.a
-          key={label}
-          href={href}
-          target="_blank"
-          rel="noreferrer"
-          aria-label={label}
-          whileHover={{ y: -3, backgroundColor: accent, color: "#000" }}
-          whileTap={{ scale: 0.92 }}
-          className="h-11 w-11 rounded-full bg-[#15151c] border border-white/5 flex items-center justify-center text-white/80 transition-shadow"
-          style={{ boxShadow: `0 0 0 0 ${accent}` }}
-        >
-          <Icon size={20} weight="fill" />
-        </motion.a>
-      ))}
-    </motion.div>
   );
 }
 
@@ -252,7 +210,7 @@ function Releases({ accent }: { accent: string }) {
             whileTap={{ scale: 0.97 }}
             whileHover={{ y: -4 }}
             draggable={false}
-            className="group relative shrink-0 w-[150px] sm:w-[170px] snap-start"
+            className="group relative shrink-0 w-37.5 sm:w-42.5 snap-start"
           >
             <div className="relative aspect-square overflow-hidden rounded-xl bg-[#15151c] border border-white/5">
               <img
@@ -343,7 +301,7 @@ function LiveGallery({ accent }: { accent: string }) {
           <motion.div
             key={i}
             whileTap={{ scale: 0.98 }}
-            className="relative shrink-0 w-[82vw] max-w-[300px] sm:w-[320px] aspect-video overflow-hidden rounded-xl border border-white/5 bg-[#15151c] snap-start"
+            className="relative shrink-0 w-[82vw] max-w-75 sm:w-[320px] aspect-video overflow-hidden rounded-xl border border-white/5 bg-[#15151c] snap-start"
           >
             <img
               src={src}

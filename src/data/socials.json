@@ -1,0 +1,7 @@
+[
+  { "name": "Instagram", "url": "https://www.instagram.com/antoine_lcd/", "icon": "FaInstagram" },
+  { "name": "TikTok", "url": "https://www.tiktok.com/@antoinelcd_", "icon": "FaTiktok" },
+  { "name": "SoundCloud", "url": "https://soundcloud.com/antoinelcd", "icon": "FaSoundcloud" },
+  { "name": "Bandcamp", "url": "https://antoinelcd.bandcamp.com/", "icon": "FaBandcamp" },
+  { "name": "YouTube", "url": "https://www.youtube.com/@antoinelcd", "icon": "FaYoutube" }
+]

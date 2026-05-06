@@ -1,10 +1,11 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { DownloadSimple } from "@phosphor-icons/react";
-import { useTheme } from "./ThemeContext";
+
+const ACCENT = "#00ffcc";
 
 export function VipPass() {
-  const { accent, isAfterparty } = useTheme();
+  const accent = ACCENT;
   const ref = useRef<HTMLAnchorElement>(null);
 
   const rotX = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
@@ -99,7 +100,7 @@ export function VipPass() {
       >
         {/* LE TOUR DE COU EN V (FONDU ULTRA DOUX) */}
         <div
-          className="relative flex justify-center pointer-events-none w-[200px] h-[150px] -mb-5 -z-10"
+          className="relative flex justify-center pointer-events-none w-50 h-37.5 -mb-5 -z-10"
           style={{
             // MODIFICATION ICI : Il est solide de 0 à 10%, puis s'efface totalement à 80%.
             // Les 20% restants de la div sont invisibles, garantissant qu'aucune ligne droite ne s'affiche.
@@ -111,7 +112,7 @@ export function VipPass() {
         >
           {/* Ruban Gauche */}
           <div
-            className="absolute bottom-0 right-1/2 w-[16px] h-full origin-bottom-right"
+            className="absolute bottom-0 right-1/2 w-4 h-full origin-bottom-right"
             style={{
               transform: "rotate(-12deg)",
               backgroundColor: accent,
@@ -121,7 +122,7 @@ export function VipPass() {
           />
           {/* Ruban Droit */}
           <div
-            className="absolute bottom-0 left-1/2 w-[16px] h-full origin-bottom-left"
+            className="absolute bottom-0 left-1/2 w-4 h-full origin-bottom-left"
             style={{
               transform: "rotate(12deg)",
               backgroundColor: accent,
@@ -133,7 +134,7 @@ export function VipPass() {
 
         {/* LA PINCE MÉTALLIQUE */}
         <div className="relative z-10 flex flex-col items-center">
-          <div className="h-4 w-[40px] rounded-sm bg-gradient-to-b from-[#e0e0e0] via-[#888] to-[#222] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_3px_5px_rgba(0,0,0,0.6)]" />
+          <div className="h-4 w-10 rounded-sm bg-linear-to-b from-[#e0e0e0] via-[#888] to-[#222] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_3px_5px_rgba(0,0,0,0.6)]" />
           <div className="h-3 w-5 border-2 border-[#555] rounded-b-full -mt-1 shadow-[inset_0_1px_2px_rgba(0,0,0,0.8)]" />
         </div>
 
@@ -153,7 +154,7 @@ export function VipPass() {
             transformStyle: "preserve-3d",
             boxShadow: shadow,
           }}
-          className="relative -mt-3 block w-[230px] rounded-xl bg-[#0e0e14] border border-white/10 overflow-hidden"
+          className="relative -mt-3 block w-57.5 rounded-xl bg-[#0e0e14] border border-white/10 overflow-hidden"
         >
           {isReceivingData && (
             <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
@@ -219,9 +220,7 @@ export function VipPass() {
               x: sheenX,
               y: sheenY,
               scale: 2,
-              background: `linear-gradient(135deg, transparent 40%, ${
-                isAfterparty ? "rgba(255,0,51,0.25)" : "rgba(0,255,204,0.25)"
-              } 50%, transparent 60%)`,
+              background: "linear-gradient(135deg, transparent 40%, rgba(0,255,204,0.25) 50%, transparent 60%)",
             }}
           />
         </motion.a>
