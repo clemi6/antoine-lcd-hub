@@ -91,7 +91,7 @@ export function VipPass() {
 
   return (
     <div
-      className="flex flex-col items-center pt-0 pb-6 relative z-0"
+      className="flex flex-col items-center pt-0 pb-6 relative z-0 overflow-x-hidden"
       style={{ perspective: 1000 }}
     >
       <motion.div
