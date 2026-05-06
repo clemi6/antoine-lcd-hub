@@ -15,9 +15,9 @@ export function VipPass() {
   const [hover, setHover] = useState(false);
   const [isReceivingData, setIsReceivingData] = useState(false);
 
-  const initialOrientation = useRef<{ beta: null | number; gamma: null | number }>({
-    beta: null,
-    gamma: null,
+  const initialOrientation = useRef<{ x: null | number; y: null | number }>({
+    x: null,
+    y: null,
   });
 
   const onMove = (e: React.PointerEvent) => {
@@ -49,20 +49,52 @@ export function VipPass() {
 
       setIsReceivingData((prev) => (prev ? prev : true));
 
-      if (initialOrientation.current.beta === null) {
-        initialOrientation.current = { beta: e.beta, gamma: e.gamma };
+      const getScreenAngle = () => {
+        const so = (window.screen && (window.screen as any).orientation && (window.screen as any).orientation.angle) ?? (window as any).orientation ?? 0;
+        return Number(so) || 0;
+      };
+
+      const angle = getScreenAngle();
+
+      let normX = e.gamma; // left/right
+      let normY = e.beta; // front/back
+
+      switch (angle) {
+        case 0:
+          normX = e.gamma;
+          normY = e.beta;
+          break;
+        case 180:
+          normX = -e.gamma;
+          normY = -e.beta;
+          break;
+        case 90:
+          normX = e.beta;
+          normY = -e.gamma;
+          break;
+        case 270:
+          normX = -e.beta;
+          normY = e.gamma;
+          break;
+        default:
+          normX = e.gamma;
+          normY = e.beta;
+      }
+
+      if (initialOrientation.current.x === null) {
+        initialOrientation.current = { x: normX, y: normY };
         return;
       }
 
-      let deltaBeta = e.beta - (initialOrientation.current.beta ?? 0);
-      let deltaGamma = e.gamma - (initialOrientation.current.gamma ?? 0);
+      let deltaX = normX - (initialOrientation.current.x ?? 0);
+      let deltaY = normY - (initialOrientation.current.y ?? 0);
 
       const maxTilt = 30;
-      deltaBeta = Math.max(-maxTilt, Math.min(maxTilt, deltaBeta));
-      deltaGamma = Math.max(-maxTilt, Math.min(maxTilt, deltaGamma));
+      deltaY = Math.max(-maxTilt, Math.min(maxTilt, deltaY));
+      deltaX = Math.max(-maxTilt, Math.min(maxTilt, deltaX));
 
-      const simulatedMouseY = deltaBeta / maxTilt;
-      const simulatedMouseX = deltaGamma / maxTilt;
+      const simulatedMouseY = deltaY / maxTilt;
+      const simulatedMouseX = deltaX / maxTilt;
 
       rotY.set(-simulatedMouseX * 35);
       rotX.set(-simulatedMouseY * 35);
