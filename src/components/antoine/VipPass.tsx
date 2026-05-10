@@ -1,12 +1,32 @@
 import { useRef, useState, useEffect, useCallback } from "react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 import { DownloadSimple } from "@phosphor-icons/react";
 import "./antoine.css";
 
-const ACCENT = "#00ffcc";
+type VipPassProps = {
+  theme?: "light" | "dark";
+};
 
-export function VipPass() {
-  const accent = ACCENT;
+type LegacyOrientationWindow = Window & {
+  orientation?: number;
+};
+
+type ScreenWithOrientation = Screen & {
+  orientation?: {
+    angle?: number;
+  };
+};
+
+export function VipPass({ theme = "light" }: VipPassProps) {
+  const accent = theme === "dark" ? "#63dbc4" : "#c7a575";
+  const ribbonShadow = theme === "dark" ? `${accent}52` : `${accent}40`;
+  const cardShadow =
+    theme === "dark" ? "0 18px 36px rgba(0,0,0,0.62)" : "0 18px 36px rgba(60,43,24,0.28)";
+  const lightGradient =
+    theme === "dark"
+      ? "linear-gradient(135deg, transparent 40%, rgba(99,219,196,0.22) 50%, transparent 60%)"
+      : "linear-gradient(135deg, transparent 40%, rgba(199,165,117,0.22) 50%, transparent 60%)";
+
   const ref = useRef<HTMLAnchorElement>(null);
 
   const rotX = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
@@ -15,6 +35,12 @@ export function VipPass() {
 
   const [hover, setHover] = useState(false);
   const [isReceivingData, setIsReceivingData] = useState(false);
+
+  const downloadColor = hover
+    ? accent
+    : theme === "dark"
+      ? "rgba(244,243,239,0.7)"
+      : "rgba(43,34,23,0.62)";
 
   const initialOrientation = useRef<{ x: null | number; y: null | number }>({
     x: null,
@@ -40,10 +66,6 @@ export function VipPass() {
     setHover(false);
   };
 
-  const shadow = useTransform(rotY, (v) => `${v / 2}px ${20 + Math.abs(v)}px 40px rgba(0,0,0,0.6)`);
-  const sheenX = useTransform(rotY, (v) => -v * 6);
-  const sheenY = useTransform(rotX, (v) => -v * 6);
-
   const handleOrientation = useCallback(
     (e: DeviceOrientationEvent) => {
       if (e.beta === null || e.gamma === null) return;
@@ -51,7 +73,9 @@ export function VipPass() {
       setIsReceivingData((prev) => (prev ? prev : true));
 
       const getScreenAngle = () => {
-        const so = (window.screen && (window.screen as any).orientation && (window.screen as any).orientation.angle) ?? (window as any).orientation ?? 0;
+        const screenAngle = (window.screen as ScreenWithOrientation).orientation?.angle;
+        const legacyAngle = (window as LegacyOrientationWindow).orientation;
+        const so = screenAngle ?? legacyAngle ?? 0;
         return Number(so) || 0;
       };
 
@@ -123,14 +147,8 @@ export function VipPass() {
   }, [handleOrientation]);
 
   return (
-    <div
-      className="vip-pass-shell"
-      style={{ perspective: 1000 }}
-    >
-      <motion.div
-        style={{ rotate: swing, originY: 0 }}
-        className="vip-pass-stage"
-      >
+    <div className="vip-pass-shell" style={{ perspective: 1000 }}>
+      <motion.div style={{ rotate: swing, originY: 0 }} className="vip-pass-stage">
         {/* LE TOUR DE COU EN V (FONDU ULTRA DOUX) */}
         <div
           className="vip-pass-lanyard"
@@ -149,7 +167,7 @@ export function VipPass() {
             style={{
               transform: "rotate(-12deg)",
               backgroundColor: accent,
-              boxShadow: `0 0 15px ${accent}60`,
+              boxShadow: `0 0 12px ${ribbonShadow}`,
               backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.5) 0%, rgba(255,255,255,0.3) 50%, rgba(0,0,0,0.5) 100%)`,
             }}
           />
@@ -159,7 +177,7 @@ export function VipPass() {
             style={{
               transform: "rotate(12deg)",
               backgroundColor: accent,
-              boxShadow: `0 0 15px ${accent}60`,
+              boxShadow: `0 0 12px ${ribbonShadow}`,
               backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.5) 0%, rgba(255,255,255,0.3) 50%, rgba(0,0,0,0.5) 100%)`,
             }}
           />
@@ -185,13 +203,11 @@ export function VipPass() {
             rotateY: rotY,
             originY: 0,
             transformStyle: "preserve-3d",
-            boxShadow: shadow,
+            boxShadow: cardShadow,
           }}
           className="vip-pass-card"
         >
-          {isReceivingData && (
-            <div className="vip-pass-card-led" />
-          )}
+          {isReceivingData && <div className="vip-pass-card-led" />}
 
           <div className="vip-pass-card-slot" />
 
@@ -199,12 +215,8 @@ export function VipPass() {
             <div className="vip-pass-tagline" style={{ color: accent }}>
               ★ ALL ACCESS ★
             </div>
-            <div className="vip-pass-title">
-              VIP
-            </div>
-            <div className="vip-pass-subtitle">
-              PRESS KIT
-            </div>
+            <div className="vip-pass-title">VIP</div>
+            <div className="vip-pass-subtitle">PRESS KIT</div>
 
             <div className="vip-pass-meta">
               <span>NAME</span>
@@ -232,25 +244,20 @@ export function VipPass() {
                 );
               })}
             </div>
-            <div className="vip-pass-footnote">
-              MEDIA ONLY · NON TRANSFERABLE
-            </div>
+            <div className="vip-pass-footnote">MEDIA ONLY · NON TRANSFERABLE</div>
 
             <div
               className={`vip-pass-download ${hover ? "is-hovered" : ""}`}
-              style={{ color: hover ? accent : "rgba(255,255,255,0.6)" }}
+              style={{ color: downloadColor }}
             >
               <DownloadSimple size={14} weight="bold" /> DOWNLOAD .ZIP
             </div>
           </div>
 
-          <motion.div
+          <div
             className="vip-pass-card-light"
             style={{
-              x: sheenX,
-              y: sheenY,
-              scale: 2,
-              background: "linear-gradient(135deg, transparent 40%, rgba(0,255,204,0.25) 50%, transparent 60%)",
+              background: lightGradient,
             }}
           />
         </motion.a>

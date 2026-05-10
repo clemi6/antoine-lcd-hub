@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { VipPass } from "@/components/antoine/VipPass";
 import { SocialLinks } from "@/components/antoine/SocialLinks";
 import { motion } from "framer-motion";
+import { Moon, Sun } from "@phosphor-icons/react";
+import { useEffect, useState } from "react";
 import "./routes.css";
 import wankidPhoto1 from "@/assets/ANTOINE_LCD_12-25-55.jpg";
 import wankidPhoto2 from "@/assets/ANTOINE_LCD_12-25-56.jpg";
@@ -12,8 +14,29 @@ export const Route = createFileRoute("/")({
 });
 
 const photos = [wankidPhoto1, wankidPhoto2, wankidPhoto3];
+const THEME_KEY = "wankid-theme";
+
+type Theme = "light" | "dark";
+
+function getInitialTheme(): Theme {
+  if (typeof window === "undefined") return "light";
+
+  const savedTheme = window.localStorage.getItem(THEME_KEY);
+  if (savedTheme === "light" || savedTheme === "dark") {
+    return savedTheme;
+  }
+
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
 
 function Index() {
+  const [theme, setTheme] = useState<Theme>(() => getInitialTheme());
+
+  useEffect(() => {
+    document.body.dataset.theme = theme;
+    window.localStorage.setItem(THEME_KEY, theme);
+  }, [theme]);
+
   return (
     <div className="app-shell">
       <main className="app-main is-visible">
@@ -23,17 +46,32 @@ function Index() {
           transition={{ duration: 0.6 }}
           className="wankid-container"
         >
-          <Header />
-          <Gallery />
-          <SocialLinks />
-          <VipPass />
+          <Header
+            theme={theme}
+            onToggleTheme={() => setTheme((prev) => (prev === "light" ? "dark" : "light"))}
+          />
+          <section className="wankid-desktop-layout">
+            <div className="wankid-desktop-visuals">
+              <Gallery />
+            </div>
+            <div className="wankid-desktop-content">
+              <SocialLinks />
+              <VipPass theme={theme} />
+            </div>
+          </section>
         </motion.div>
       </main>
     </div>
   );
 }
 
-function Header() {
+function Header({
+  theme,
+  onToggleTheme,
+}: {
+  theme: Theme;
+  onToggleTheme: () => void;
+}) {
   return (
     <motion.header 
       className="wankid-header"
@@ -42,6 +80,15 @@ function Header() {
       transition={{ duration: 0.8 }}
     >
       <div className="wankid-header-content">
+        <button
+          type="button"
+          className="theme-toggle"
+          onClick={onToggleTheme}
+          aria-label={theme === "light" ? "Activer le mode sombre" : "Activer le mode clair"}
+        >
+          {theme === "light" ? <Moon size={18} weight="bold" /> : <Sun size={18} weight="bold" />}
+          <span>{theme === "light" ? "SOMBRE" : "CLAIR"}</span>
+        </button>
         <img 
           src={wankidPhoto1} 
           alt="WANKID" 

@@ -2,10 +2,10 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(0.13 0.012 270);
-  --foreground: oklch(0.97 0.005 240);
-  --surface: oklch(0.17 0.012 270);
-  --accent-neon: oklch(0.92 0.18 180);
+  --background: #f6f1e8;
+  --foreground: #2b251d;
+  --surface: #efe7da;
+  --accent-neon: #c7a575;
   --font-display: "Bebas Neue", sans-serif;
   --font-sans: "Inter", sans-serif;
   --font-mono: "Space Mono", monospace;
@@ -24,12 +24,16 @@ body,
 
 body {
   margin: 0;
-  background: linear-gradient(to bottom, #1a1a24, #0d0d12);
-  background-attachment: fixed;
+  background: linear-gradient(to bottom, #f8f3ea, #eee5d7);
   color: var(--foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+body[data-theme="dark"] {
+  background: linear-gradient(to bottom, #17191f, #101217);
+  color: #ece8e0;
 }
 
 button,
