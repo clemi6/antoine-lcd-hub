@@ -11,6 +11,7 @@ import {
   removeOrientationListener,
   requestPermission,
 } from "@/lib/orientation";
+import "./antoine.css";
 
 type HeroProps = {
   title?: string;
@@ -157,7 +158,7 @@ export function Hero({ title = "ANTOINE LCD", onEnter }: HeroProps) {
   return (
     <div
       ref={shellRef}
-      className="fixed inset-0 z-70 overflow-hidden bg-[radial-gradient(ellipse_at_top,rgba(19,23,35,0.98)_0%,rgba(5,6,8,0.99)_52%,#000_100%)] text-white"
+      className="hero-shell"
       style={{ touchAction: "manipulation" }}
       onPointerMove={updatePointerTarget}
       onPointerDown={updatePointerTarget}
@@ -172,104 +173,82 @@ export function Hero({ title = "ANTOINE LCD", onEnter }: HeroProps) {
         }
       }}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(0,255,204,0.12),transparent_40%),linear-gradient(180deg,rgba(255,255,255,0.03),transparent_28%,rgba(0,0,0,0.22))]" />
-      <div
-        className="absolute inset-0 opacity-[0.14] mix-blend-overlay"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
-        }}
-      />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_65%,rgba(0,0,0,0)_0%,rgba(0,0,0,0.2)_55%,rgba(0,0,0,0.6)_100%)]" />
-      <div className="absolute inset-x-0 top-0 h-20 bg-linear-to-b from-cyan-300/8 to-transparent" />
+      <div className="hero-shell-inner">
+        <div className="hero-shell-gradient" />
+        <div className="hero-shell-grid" />
+        <div className="hero-shell-vignette" />
+        <div className="hero-top-fade" />
 
-      <div className="pointer-events-none absolute inset-x-0 top-[18vh] z-20 hidden px-6 text-center sm:block">
-        <div className="mx-auto max-w-5xl text-[clamp(3.8rem,12vw,9rem)] leading-[0.8] tracking-[0.12em] text-white/12 drop-shadow-[0_0_45px_rgba(0,255,204,0.12)]">
-          {title}
+        <div className="hero-title-desktop">
+          <div className="hero-title-text-desktop">{title}</div>
         </div>
-      </div>
-      <div className="pointer-events-none absolute inset-x-0 top-[22vh] z-20 px-6 text-center sm:hidden">
-        <div className="text-[clamp(2.8rem,18vw,5rem)] leading-[0.8] tracking-[0.08em] text-white/12">
-          {title}
+        <div className="hero-title-mobile">
+          <div className="hero-title-text-mobile">{title}</div>
         </div>
-      </div>
 
-      <Canvas
-        dpr={[1, 2]}
-        shadows={false}
-        camera={{ position: [0, 0, 8.2], fov: 36 }}
-        className="absolute inset-0"
-      >
-        <color attach="background" args={["#07080b"]} />
-        <fog attach="fog" args={["#07080b", 10, 22]} />
-        <ambientLight intensity={0.55} />
-        <pointLight position={[-5, 3, 6]} intensity={6} color={HERO_ACCENT} />
-        <pointLight position={[5, -2, 4]} intensity={4} color="#e8f6ff" />
-        <spotLight position={[0, 6, 7]} angle={0.45} penumbra={1} intensity={12} color="#ffffff" />
-        <Environment preset="city" />
-        <HeroTitle
-          ref={titleGroupRef}
-          title={title}
-          pointerTargetRef={pointerTargetRef}
-          deviceTargetRef={deviceTargetRef}
+        <Canvas
+          dpr={[1, 2]}
+          shadows={false}
+          camera={{ position: [0, 0, 8.2], fov: 36 }}
+          className="hero-canvas"
+        >
+          <color attach="background" args={["#07080b"]} />
+          <fog attach="fog" args={["#07080b", 10, 22]} />
+          <ambientLight intensity={0.55} />
+          <pointLight position={[-5, 3, 6]} intensity={6} color={HERO_ACCENT} />
+          <pointLight position={[5, -2, 4]} intensity={4} color="#e8f6ff" />
+          <spotLight position={[0, 6, 7]} angle={0.45} penumbra={1} intensity={12} color="#ffffff" />
+          <Environment preset="city" />
+          <HeroTitle
+            ref={titleGroupRef}
+            title={title}
+            pointerTargetRef={pointerTargetRef}
+            deviceTargetRef={deviceTargetRef}
+          />
+        </Canvas>
+
+        <div ref={usbStageRef} className="hero-usb-stage">
+          <div className="hero-usb-stage-shell">
+            <div className="hero-usb-head">
+              <div className="hero-usb-head-indicators">
+                <span className="hero-usb-indicator hero-usb-indicator--primary" />
+                <span className="hero-usb-indicator hero-usb-indicator--secondary" />
+                <span className="hero-usb-indicator hero-usb-indicator--tertiary" />
+              </div>
+              <div className="hero-usb-head-port" />
+              <div className="hero-usb-head-base" />
+            </div>
+
+            <div ref={usbStickRef} className="hero-usb-stick" style={{ willChange: "transform" }}>
+              <div className="hero-usb-plug">
+                <div className="hero-usb-plug-chip" />
+              </div>
+              <div className="hero-usb-body">
+                <div className="hero-usb-body-glow" />
+                <div className="hero-usb-body-panel" />
+                <div className="hero-usb-body-led" />
+                <div className="hero-usb-body-led-secondary" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="hero-enter-hint">
+          <div className="hero-enter-hint-mobile">TAP TO ENTER</div>
+          <div className="hero-enter-hint-desktop">CLICK TO ENTER</div>
+          <div className="hero-enter-caption">{title} // Club interface ready</div>
+        </div>
+
+        <div
+          ref={flashRef}
+          className="hero-flash"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 50%, rgba(255,255,255,1) 0%, rgba(208,246,255,0.95) 18%, rgba(0,255,204,0.42) 40%, rgba(255,255,255,0) 72%)",
+            filter: "blur(12px)",
+          }}
         />
-      </Canvas>
-
-      <div
-        ref={usbStageRef}
-        className="pointer-events-none absolute inset-x-0 bottom-[18vh] mx-auto flex w-full max-w-160 items-center justify-center px-6 opacity-0 sm:bottom-[22vh]"
-      >
-        <div className="relative h-28 w-full max-w-104">
-          <div className="absolute right-0 top-4 h-16 w-42 rounded-[1.3rem] border border-white/10 bg-[linear-gradient(180deg,#101214_0%,#050608_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_24px_60px_rgba(0,0,0,0.45)]">
-            <div className="absolute inset-y-2 right-2 flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(0,255,204,0.9)]" />
-              <span className="h-1.5 w-1.5 rounded-full bg-cyan-300/60 shadow-[0_0_10px_rgba(0,255,204,0.55)]" />
-              <span className="h-1.5 w-1.5 rounded-full bg-cyan-300/35" />
-            </div>
-            <div className="absolute inset-x-3 top-1/2 h-6 -translate-y-1/2 rounded-[0.9rem] border border-white/5 bg-black/60" />
-            <div className="absolute inset-x-4 bottom-3 h-1 rounded-full bg-white/10" />
-          </div>
-
-          <div
-            ref={usbStickRef}
-            className="absolute left-0 top-6 flex h-10 w-[16rem] items-stretch rounded-3xl border border-white/8 bg-[linear-gradient(180deg,#262b30_0%,#0d1014_100%)] shadow-[0_18px_50px_rgba(0,0,0,0.45)]"
-            style={{ willChange: "transform" }}
-          >
-            <div className="w-14 rounded-l-3xl bg-[linear-gradient(180deg,#b2bbc4_0%,#5f6872_48%,#222831_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
-              <div className="mx-auto mt-3 h-4 w-8 rounded-[0.45rem] border border-black/25 bg-black/25" />
-            </div>
-            <div className="relative flex-1 overflow-hidden rounded-r-3xl">
-              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.08),transparent_22%,transparent_78%,rgba(255,255,255,0.06))]" />
-              <div className="absolute inset-y-2 left-3 right-4 rounded-[0.8rem] border border-white/5 bg-[linear-gradient(180deg,#121419_0%,#07080b_100%)]" />
-              <div className="absolute left-4 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(0,255,204,0.95)]" />
-              <div className="absolute left-8 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-cyan-300/60 shadow-[0_0_12px_rgba(0,255,204,0.6)]" />
-            </div>
-          </div>
-        </div>
       </div>
-
-      <div className="pointer-events-none absolute inset-x-0 bottom-8 z-10 flex flex-col items-center gap-3 px-6 text-center sm:bottom-10">
-        <div className="font-mono-tech text-[10px] tracking-[0.46em] text-white/55 sm:hidden animate-pulse">
-          TAP TO ENTER
-        </div>
-        <div className="hidden font-mono-tech text-[10px] tracking-[0.46em] text-white/55 sm:block animate-pulse">
-          CLICK TO ENTER
-        </div>
-        <div className="max-w-88 text-[0.72rem] uppercase tracking-[0.28em] text-white/24">
-          {title} // Club interface ready
-        </div>
-      </div>
-
-      <div
-        ref={flashRef}
-        className="pointer-events-none absolute inset-0 z-20 opacity-0"
-        style={{
-          background:
-            "radial-gradient(circle at 50% 50%, rgba(255,255,255,1) 0%, rgba(208,246,255,0.95) 18%, rgba(0,255,204,0.42) 40%, rgba(255,255,255,0) 72%)",
-          filter: "blur(12px)",
-        }}
-      />
     </div>
   );
 }

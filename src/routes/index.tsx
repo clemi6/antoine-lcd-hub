@@ -10,6 +10,7 @@ import { Hero } from "@/components/antoine/Hero";
 import { SocialLinks } from "@/components/antoine/SocialLinks";
 import { StrobeLayer, useStrobe, useGlitch } from "@/components/antoine/GlitchStrobe";
 import { VipPass } from "@/components/antoine/VipPass";
+import "./routes.css";
 import profileImg from "@/assets/antoine-profile.jpg";
 import hitImg from "@/assets/release-hit.jpg";
 import rel1 from "@/assets/release-1.jpg";
@@ -49,14 +50,12 @@ function App() {
   const strobe = useStrobe();
 
   return (
-    <div className="relative min-h-screen w-full bg-[radial-gradient(ellipse_at_top,#1a1a24_0%,#0d0d12_60%,#050506_100%)] transition-colors duration-700">
+    <div className="app-shell">
       <StrobeLayer active={strobe.active} />
       <Hero title="ANTOINE LCD" onEnter={() => setEntered(true)} />
 
       <main
-        className={`relative z-10 mx-auto w-full max-w-120 px-5 pb-24 pt-3 transition-opacity duration-700 ${
-          entered ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
+        className={`app-main ${entered ? "is-visible" : "is-hidden"}`}
       >
 
         <AnimatePresence>
@@ -97,9 +96,9 @@ const item = {
 
 function Header() {
   return (
-    <motion.header variants={item} className="flex flex-col items-center text-center pt-4 pb-6">
+    <motion.header variants={item} className="page-header">
       <div
-        className="relative h-27.5 w-27.5 rounded-full p-0.5"
+        className="page-avatar-shell"
         style={{
           background: `conic-gradient(from 180deg, ${ACCENT}, transparent 60%, ${ACCENT})`,
         }}
@@ -109,14 +108,14 @@ function Header() {
           alt="ANTOINE LCD portrait"
           width={110}
           height={110}
-          className="h-full w-full rounded-full object-cover bg-black"
+          className="page-avatar"
         />
       </div>
-      <h1 className="font-display text-white text-[64px] leading-[0.9] mt-5">ANTOINE LCD</h1>
-      <div className="font-mono-tech text-[10px] tracking-[0.4em] mt-2" style={{ color: ACCENT }}>
+      <h1 className="page-title">ANTOINE LCD</h1>
+      <div className="page-kicker" style={{ color: ACCENT }}>
         TECHNO · HARDWARE · LIVE
       </div>
-      <p className="font-sans text-sm text-white/60 mt-3 max-w-75 leading-relaxed">
+      <p className="page-intro">
         Industrial techno from the underground. Modular hardware sets, blood-pressure BPM, no
         laptops on the booth.
       </p>
@@ -135,36 +134,38 @@ function BiggestHit({
 }) {
   const glitch = useGlitch();
   return (
-    <motion.section variants={item} className="mb-8">
-      <div className="flex items-center gap-2 mb-3">
-        <span className="h-1.5 w-1.5 rounded-full" style={{ background: accent }} />
-        <span className="font-mono-tech text-[10px] tracking-[0.3em] text-white/50">
+    <motion.section variants={item} className="section-block">
+      <div className="section-head">
+        <div className="section-label-group">
+          <span className="section-dot" style={{ background: accent }} />
+          <span className="section-label">
           BIGGEST HIT // 01
-        </span>
+          </span>
+        </div>
       </div>
       <motion.div
         whileTap={{ scale: 0.98 }}
-        className="overflow-hidden rounded-2xl bg-[#15151c] border border-white/5"
+        className="card-shell card-shell--dark"
       >
-        <div className="aspect-square w-full overflow-hidden bg-black">
+        <div className="card-media card-media--square">
           <img
             src={hitImg}
             alt="Arrêt du Cœur x Memories cover"
             width={800}
             height={800}
-            className="h-full w-full object-cover"
+            className="card-media-img"
           />
         </div>
-        <div className="p-5">
-          <div className="font-mono-tech text-[10px] tracking-[0.3em]" style={{ color: accent }}>
+        <div className="card-body">
+          <div className="card-kicker card-kicker--accent" style={{ color: accent }}>
             NEW SINGLE · 138 BPM
           </div>
-          <h2 className="font-display text-white text-[34px] leading-none mt-2">
+          <h2 className="card-title card-title--xl">
             ARRÊT DU CŒUR
-            <span className="text-white/40"> × </span>
+            <span style={{ color: "rgba(255,255,255,0.4)" }}> × </span>
             MEMORIES
           </h2>
-          <p className="text-white/60 text-sm mt-2">
+          <p className="card-text">
             Cardiac kickdrum meets fading polaroids. Out now on every platform.
           </p>
           <motion.a
@@ -176,7 +177,7 @@ function BiggestHit({
               strobe();
               glitch.fire();
             }}
-            className={`mt-4 flex items-center justify-center gap-3 rounded-xl py-4 font-mono-tech text-[12px] tracking-[0.3em] text-black ${glitch.className}`}
+            className={`button-base button-accent ${glitch.className}`}
             style={{
               background: accent,
               boxShadow: `0 0 30px rgba(${accentRgb},0.35)`,
@@ -192,17 +193,17 @@ function BiggestHit({
 
 function Releases({ accent }: { accent: string }) {
   return (
-    <motion.section variants={item} className="mb-8 -mx-5">
-      <div className="px-5 flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full" style={{ background: accent }} />
-          <span className="font-mono-tech text-[10px] tracking-[0.3em] text-white/50">
+    <motion.section variants={item} className="section-block section-block--edge">
+      <div className="section-head">
+        <div className="section-label-group">
+          <span className="section-dot" style={{ background: accent }} />
+          <span className="section-label">
             RELEASES // CATALOG
           </span>
         </div>
-        <span className="font-mono-tech text-[10px] text-white/30">SWIPE →</span>
+        <span className="section-hint">SWIPE →</span>
       </div>
-      <div className="flex gap-3 px-5 pb-1 carousel-scroll scrollbar-hidden snap-x snap-mandatory">
+      <div className="carousel-track scrollbar-hidden">
         {releases.map((r) => (
           <motion.a
             key={r.title}
@@ -210,9 +211,9 @@ function Releases({ accent }: { accent: string }) {
             whileTap={{ scale: 0.97 }}
             whileHover={{ y: -4 }}
             draggable={false}
-            className="group relative shrink-0 w-37.5 sm:w-42.5 snap-start"
+            className="carousel-card carousel-card--release"
           >
-            <div className="relative aspect-square overflow-hidden rounded-xl bg-[#15151c] border border-white/5">
+            <div className="card-shell card-shell--dark card-media--square" style={{ position: "relative" }}>
               <img
                 src={r.img}
                 alt={r.title}
@@ -220,19 +221,16 @@ function Releases({ accent }: { accent: string }) {
                 height={512}
                 draggable={false}
                 loading="lazy"
-                className="h-full w-full object-cover pointer-events-none"
+                className="card-media-img"
               />
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                <div
-                  className="h-12 w-12 rounded-full flex items-center justify-center"
-                  style={{ background: accent }}
-                >
-                  <Play size={20} weight="fill" className="text-black ml-0.5" />
+              <div className="card-overlay">
+                <div className="card-overlay-badge" style={{ background: accent }}>
+                  <Play size={20} weight="fill" style={{ color: "black", marginLeft: 2 }} />
                 </div>
               </div>
             </div>
-            <div className="mt-2 font-display text-white text-lg leading-none">{r.title}</div>
-            <div className="font-mono-tech text-[10px] text-white/40 mt-1">{r.year}</div>
+            <div className="card-title card-title--lg">{r.title}</div>
+            <div className="card-meta card-meta--small">{r.year}</div>
           </motion.a>
         ))}
       </div>
@@ -242,31 +240,33 @@ function Releases({ accent }: { accent: string }) {
 
 function AudioBlock({ accent }: { accent: string }) {
   return (
-    <motion.section variants={item} className="mb-8">
-      <div className="flex items-center gap-2 mb-3">
-        <span className="h-1.5 w-1.5 rounded-full" style={{ background: accent }} />
-        <span className="font-mono-tech text-[10px] tracking-[0.3em] text-white/50">
+    <motion.section variants={item} className="section-block">
+      <div className="section-head" style={{ justifyContent: "flex-start" }}>
+        <div className="section-label-group">
+          <span className="section-dot" style={{ background: accent }} />
+          <span className="section-label">
           AUDIO // STREAM
-        </span>
+          </span>
+        </div>
       </div>
-      <div className="rounded-xl bg-[#15151c] border border-white/5 overflow-hidden">
+      <div className="card-shell card-shell--dark">
         <iframe
           title="SoundCloud player"
           width="100%"
           height="160"
           allow="autoplay"
-          className="block"
+          className="card-media-img"
           src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/1234567890&color=%2300ffcc&inverse=true&auto_play=false&show_user=true&hide_related=true&visual=false"
         />
       </div>
-      <div className="mt-3 grid grid-cols-2 gap-3">
+      <div className="button-row">
         <motion.a
           whileTap={{ scale: 0.97 }}
           whileHover={{ y: -2 }}
           href="https://bandcamp.com"
           target="_blank"
           rel="noreferrer"
-          className="flex items-center justify-center gap-2 rounded-xl bg-[#15151c] border border-white/10 py-3.5 font-mono-tech text-[10px] tracking-[0.25em] text-white/80 hover:text-white"
+          className="button-base button-dark"
         >
           <ShoppingBag size={14} weight="bold" /> BANDCAMP
         </motion.a>
@@ -274,7 +274,7 @@ function AudioBlock({ accent }: { accent: string }) {
           whileTap={{ scale: 0.97 }}
           whileHover={{ y: -2 }}
           href="#press-kit"
-          className="flex items-center justify-center gap-2 rounded-xl py-3.5 font-mono-tech text-[10px] tracking-[0.25em] text-black"
+          className="button-base button-accent"
           style={{ background: accent }}
         >
           PRESS KIT <ArrowRight size={14} weight="bold" />
@@ -286,22 +286,22 @@ function AudioBlock({ accent }: { accent: string }) {
 
 function LiveGallery({ accent }: { accent: string }) {
   return (
-    <motion.section variants={item} className="mb-8 -mx-5">
-      <div className="px-5 flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full" style={{ background: accent }} />
-          <span className="font-mono-tech text-[10px] tracking-[0.3em] text-white/50">
+    <motion.section variants={item} className="section-block section-block--edge">
+      <div className="section-head">
+        <div className="section-label-group">
+          <span className="section-dot" style={{ background: accent }} />
+          <span className="section-label">
             LIVE & VISUALS
           </span>
         </div>
-        <span className="font-mono-tech text-[10px] text-white/30">SWIPE →</span>
+        <span className="section-hint">SWIPE →</span>
       </div>
-      <div className="flex gap-3 px-5 pb-1 carousel-scroll scrollbar-hidden snap-x snap-mandatory">
+      <div className="carousel-track scrollbar-hidden">
         {lives.map((src, i) => (
           <motion.div
             key={i}
             whileTap={{ scale: 0.98 }}
-            className="relative shrink-0 w-[82vw] max-w-75 sm:w-[320px] aspect-video overflow-hidden rounded-xl border border-white/5 bg-[#15151c] snap-start"
+            className="carousel-card carousel-card--live card-shell card-shell--dark"
           >
             <img
               src={src}
@@ -310,9 +310,9 @@ function LiveGallery({ accent }: { accent: string }) {
               height={720}
               draggable={false}
               loading="lazy"
-              className="h-full w-full object-cover pointer-events-none"
+              className="card-media-img"
             />
-            <div className="absolute bottom-2 left-3 font-mono-tech text-[10px] tracking-widest text-white/80">
+            <div className="card-counter">
               0{i + 1} / 0{lives.length}
             </div>
           </motion.div>
@@ -332,14 +332,16 @@ function TourDates({
   strobe: () => void;
 }) {
   return (
-    <motion.section variants={item} className="mb-10">
-      <div className="flex items-center gap-2 mb-3">
-        <span className="h-1.5 w-1.5 rounded-full" style={{ background: accent }} />
-        <span className="font-mono-tech text-[10px] tracking-[0.3em] text-white/50">
+    <motion.section variants={item} className="section-block">
+      <div className="section-head" style={{ justifyContent: "flex-start" }}>
+        <div className="section-label-group">
+          <span className="section-dot" style={{ background: accent }} />
+          <span className="section-label">
           TOUR // 2026
-        </span>
+          </span>
+        </div>
       </div>
-      <div className="rounded-xl bg-[#15151c] border border-white/5 overflow-hidden divide-y divide-white/5">
+      <div className="tour-shell">
         {tour.map((t) => (
           <TourRow key={t.venue} t={t} accent={accent} accentRgb={accentRgb} strobe={strobe} />
         ))}
@@ -362,21 +364,21 @@ function TourRow({
   const glitch = useGlitch();
   const [m, d] = t.date.split(" ");
   return (
-    <div className="flex items-center justify-between px-4 py-4 gap-3">
-      <div className="flex items-center gap-4 min-w-0">
-        <div className="text-center w-12 shrink-0">
-          <div className="font-mono-tech text-[10px] tracking-widest text-white/40">{m}</div>
-          <div className="font-display text-white text-3xl leading-none">{d}</div>
+    <div className="tour-row">
+      <div className="tour-info">
+        <div className="tour-date">
+          <div className="tour-date-month">{m}</div>
+          <div className="tour-date-day">{d}</div>
         </div>
-        <div className="min-w-0">
-          <div className="font-display text-white text-xl leading-none truncate">{t.venue}</div>
-          <div className="font-mono-tech text-[10px] tracking-widest text-white/50 mt-1">
+        <div className="tour-venue">
+          <div className="tour-venue-name">{t.venue}</div>
+          <div className="tour-venue-city">
             {t.city}
           </div>
         </div>
       </div>
       {t.soldOut ? (
-        <div className="font-mono-tech text-[10px] tracking-[0.25em] px-3 py-2 rounded-md bg-white/5 text-white/30 border border-white/5">
+        <div className="tour-badge tour-badge--soldout">
           SOLD OUT
         </div>
       ) : (
@@ -387,7 +389,7 @@ function TourRow({
             strobe();
             glitch.fire();
           }}
-          className={`font-mono-tech text-[10px] tracking-[0.25em] px-3 py-2 rounded-md text-black ${glitch.className}`}
+          className={`tour-badge tour-badge--tickets ${glitch.className}`}
           style={{
             background: accent,
             boxShadow: `0 0 18px rgba(${accentRgb},0.35)`,
@@ -402,12 +404,14 @@ function TourRow({
 
 function PressKit() {
   return (
-    <motion.section id="press-kit" variants={item} className="mb-8">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
-        <span className="font-mono-tech text-[10px] tracking-[0.3em] text-white/50">
+    <motion.section id="press-kit" variants={item} className="section-block">
+      <div className="section-head" style={{ justifyContent: "flex-start" }}>
+        <div className="section-label-group">
+          <span className="section-dot" style={{ background: "rgba(255,255,255,0.4)" }} />
+          <span className="section-label">
           BACKSTAGE // PRESS
-        </span>
+          </span>
+        </div>
       </div>
       <VipPass />
     </motion.section>
@@ -416,8 +420,8 @@ function PressKit() {
 
 function Footer() {
   return (
-    <motion.footer variants={item} className="text-center pt-6">
-      <div className="font-mono-tech text-[9px] tracking-[0.4em] text-white/25">
+    <motion.footer variants={item} className="section-footer">
+      <div className="section-footer-text">
         © 2026 ANTOINE LCD · BOOKING@ANTOINELCD.COM
       </div>
     </motion.footer>

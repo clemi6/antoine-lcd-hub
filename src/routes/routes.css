@@ -1,0 +1,542 @@
+.app-shell {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  background: radial-gradient(ellipse at top, #1a1a24 0%, #0d0d12 60%, #050506 100%);
+  transition: color 700ms ease, background 700ms ease;
+}
+
+.app-main {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 30rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0.75rem 1.25rem 6rem;
+  transition: opacity 700ms ease;
+}
+
+.app-main.is-hidden {
+  pointer-events: none;
+  opacity: 0;
+}
+
+.app-main.is-visible {
+  opacity: 1;
+}
+
+.page-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.page-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 1rem;
+  padding-bottom: 1.5rem;
+  text-align: center;
+}
+
+.page-avatar-shell {
+  position: relative;
+  width: 6.875rem;
+  height: 6.875rem;
+  padding: 0.125rem;
+  border-radius: 999px;
+}
+
+.page-avatar-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: conic-gradient(from 180deg, #00ffcc, transparent 60%, #00ffcc);
+}
+
+.page-avatar {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  object-fit: cover;
+  background: black;
+}
+
+.page-title {
+  margin-top: 1.25rem;
+  color: white;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 14vw, 4rem);
+  line-height: 0.9;
+}
+
+.page-kicker {
+  margin-top: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.4em;
+  color: #00ffcc;
+}
+
+.page-intro {
+  margin-top: 0.75rem;
+  max-width: 20rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+.section-block {
+  margin-bottom: 2rem;
+}
+
+.section-block--edge {
+  margin-left: -1.25rem;
+  margin-right: -1.25rem;
+}
+
+.section-head {
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+.section-label-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 999px;
+  background: #00ffcc;
+}
+
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.section-hint {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.card-shell {
+  overflow: hidden;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #15151c;
+}
+
+.card-shell--dark {
+  background: #15151c;
+}
+
+.card-media {
+  width: 100%;
+  overflow: hidden;
+  background: black;
+}
+
+.card-media--square {
+  aspect-ratio: 1;
+}
+
+.card-media-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-body {
+  padding: 1.25rem;
+}
+
+.card-kicker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+}
+
+.card-kicker--accent {
+  color: #00ffcc;
+}
+
+.card-title {
+  margin-top: 0.5rem;
+  color: white;
+  font-family: var(--font-display);
+  line-height: 0.95;
+}
+
+.card-title--xl {
+  font-size: 2.125rem;
+}
+
+.card-title--lg {
+  font-size: 1.75rem;
+}
+
+.card-text {
+  margin-top: 0.5rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.94rem;
+  line-height: 1.5;
+}
+
+.button-row {
+  margin-top: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  text-decoration: none;
+  transition: transform 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+
+.button-base:active {
+  transform: scale(0.97);
+}
+
+.button-dark {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #15151c;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.button-accent {
+  background: #00ffcc;
+  color: black;
+}
+
+.carousel-section {
+  margin-left: -1.25rem;
+  margin-right: -1.25rem;
+}
+
+.carousel-track {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0 1.25rem 0.25rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+}
+
+.carousel-card {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+.carousel-card--release {
+  width: 9.375rem;
+}
+
+.carousel-card--release-sm {
+  width: 10.625rem;
+}
+
+.carousel-card--live {
+  width: 82vw;
+  max-width: 18.75rem;
+  aspect-ratio: 16 / 9;
+}
+
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.card-shell:hover .card-overlay {
+  opacity: 1;
+}
+
+.card-overlay-badge {
+  display: flex;
+  width: 3rem;
+  height: 3rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #00ffcc;
+}
+
+.card-meta {
+  margin-top: 0.5rem;
+  font-family: var(--font-mono);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.card-meta--small {
+  font-size: 10px;
+}
+
+.card-meta--tiny {
+  font-size: 9px;
+}
+
+.card-counter {
+  position: absolute;
+  left: 0.75rem;
+  bottom: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.tour-shell {
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #15151c;
+}
+
+.tour-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.tour-row + .tour-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tour-info {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tour-date {
+  width: 3rem;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.tour-date-month {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.tour-date-day {
+  color: white;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.tour-venue {
+  min-width: 0;
+}
+
+.tour-venue-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: white;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.tour-venue-city {
+  margin-top: 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.tour-badge {
+  flex-shrink: 0;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+}
+
+.tour-badge--soldout {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.tour-badge--tickets {
+  background: #00ffcc;
+  color: black;
+}
+
+.section-footer {
+  padding-top: 1.5rem;
+  text-align: center;
+}
+
+.section-footer-text {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.4em;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.route-error,
+.not-found {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: radial-gradient(ellipse at top, #1a1a24 0%, #0d0d12 60%, #050506 100%);
+}
+
+.route-error-card,
+.not-found-card {
+  max-width: 28rem;
+  text-align: center;
+}
+
+.route-error-title,
+.not-found-title {
+  color: white;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 10vw, 4.5rem);
+  line-height: 0.95;
+}
+
+.route-error-subtitle,
+.not-found-subtitle {
+  margin-top: 1rem;
+  color: white;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+}
+
+.route-error-text,
+.not-found-text {
+  margin-top: 0.5rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.route-error-actions,
+.not-found-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.route-error-button,
+.not-found-button,
+.route-error-link,
+.not-found-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+
+.route-error-button,
+.not-found-button {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+.route-error-link,
+.not-found-link {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: transparent;
+  color: white;
+}
+
+.route-error-code {
+  margin-bottom: 1.5rem;
+  color: #ff5a5a;
+  font-family: var(--font-display);
+  font-size: 4rem;
+  line-height: 1;
+}
+
+.route-error-code {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.route-error-pre {
+  margin-top: 1rem;
+  max-height: 10rem;
+  overflow: auto;
+  border-radius: 0.375rem;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.75rem;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: #ff5a5a;
+  white-space: pre-wrap;
+}
+
+@media (min-width: 640px) {
+  .app-main {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .card-title--xl {
+    font-size: 2.5rem;
+  }
+
+  .card-title--lg {
+    font-size: 2rem;
+  }
+
+  .carousel-card--release {
+    width: 10.625rem;
+  }
+
+  .carousel-card--live {
+    width: 20rem;
+  }
+}

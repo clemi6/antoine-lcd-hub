@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { DownloadSimple } from "@phosphor-icons/react";
+import "./antoine.css";
 
 const ACCENT = "#00ffcc";
 
@@ -123,16 +124,16 @@ export function VipPass() {
 
   return (
     <div
-      className="flex flex-col items-center pt-0 pb-6 relative z-0 overflow-x-hidden"
+      className="vip-pass-shell"
       style={{ perspective: 1000 }}
     >
       <motion.div
         style={{ rotate: swing, originY: 0 }}
-        className="relative flex flex-col items-center origin-top w-full"
+        className="vip-pass-stage"
       >
         {/* LE TOUR DE COU EN V (FONDU ULTRA DOUX) */}
         <div
-          className="relative flex justify-center pointer-events-none w-50 h-37.5 -mb-5 -z-10"
+          className="vip-pass-lanyard"
           style={{
             // MODIFICATION ICI : Il est solide de 0 à 10%, puis s'efface totalement à 80%.
             // Les 20% restants de la div sont invisibles, garantissant qu'aucune ligne droite ne s'affiche.
@@ -144,7 +145,7 @@ export function VipPass() {
         >
           {/* Ruban Gauche */}
           <div
-            className="absolute bottom-0 right-1/2 w-4 h-full origin-bottom-right"
+            className="vip-pass-lanyard-left"
             style={{
               transform: "rotate(-12deg)",
               backgroundColor: accent,
@@ -154,7 +155,7 @@ export function VipPass() {
           />
           {/* Ruban Droit */}
           <div
-            className="absolute bottom-0 left-1/2 w-4 h-full origin-bottom-left"
+            className="vip-pass-lanyard-right"
             style={{
               transform: "rotate(12deg)",
               backgroundColor: accent,
@@ -165,9 +166,9 @@ export function VipPass() {
         </div>
 
         {/* LA PINCE MÉTALLIQUE */}
-        <div className="relative z-10 flex flex-col items-center">
-          <div className="h-4 w-10 rounded-sm bg-linear-to-b from-[#e0e0e0] via-[#888] to-[#222] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_3px_5px_rgba(0,0,0,0.6)]" />
-          <div className="h-3 w-5 border-2 border-[#555] rounded-b-full -mt-1 shadow-[inset_0_1px_2px_rgba(0,0,0,0.8)]" />
+        <div className="vip-pass-clip">
+          <div className="vip-pass-clip-top" />
+          <div className="vip-pass-clip-bottom" />
         </div>
 
         {/* LA CARTE VIP */}
@@ -186,45 +187,42 @@ export function VipPass() {
             transformStyle: "preserve-3d",
             boxShadow: shadow,
           }}
-          className="relative -mt-3 block w-57.5 rounded-xl bg-[#0e0e14] border border-white/10 overflow-hidden"
+          className="vip-pass-card"
         >
           {isReceivingData && (
-            <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+            <div className="vip-pass-card-led" />
           )}
 
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 h-3 w-10 rounded-full bg-black border border-white/10 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]" />
+          <div className="vip-pass-card-slot" />
 
-          <div className="pt-8 pb-4 px-4">
-            <div
-              className="font-mono-tech text-[8px] tracking-[0.4em] text-center"
-              style={{ color: accent }}
-            >
+          <div className="vip-pass-card-content">
+            <div className="vip-pass-tagline" style={{ color: accent }}>
               ★ ALL ACCESS ★
             </div>
-            <div className="font-display text-white text-3xl leading-none text-center mt-2">
+            <div className="vip-pass-title">
               VIP
             </div>
-            <div className="font-display text-white/80 text-xl leading-none text-center mt-0.5">
+            <div className="vip-pass-subtitle">
               PRESS KIT
             </div>
 
-            <div className="mt-3 flex items-center justify-between font-mono-tech text-[8px] text-white/50">
+            <div className="vip-pass-meta">
               <span>NAME</span>
               <span>MEDIA / PROMO</span>
             </div>
-            <div className="mt-1 flex items-center justify-between font-mono-tech text-[8px] text-white/40">
+            <div className="vip-pass-meta-2">
               <span>ID</span>
               <span>LCD-2026-0033</span>
             </div>
 
-            <div className="mt-3 flex items-start h-10 bg-white px-3 py-1.5 rounded-sm mx-auto w-fit">
+            <div className="vip-pass-barcode">
               {Array.from({ length: 32 }).map((_, i) => {
                 const barWidth = ((i * 13) % 3) + 1;
                 const spaceWidth = ((i * 7) % 2) + 1;
                 return (
                   <div
                     key={i}
-                    className="bg-black shrink-0"
+                    className="vip-pass-barcode-bar"
                     style={{
                       width: `${barWidth}px`,
                       marginRight: i === 31 ? "0px" : `${spaceWidth}px`,
@@ -234,12 +232,12 @@ export function VipPass() {
                 );
               })}
             </div>
-            <div className="font-mono-tech text-[8px] text-white/40 text-center mt-2 tracking-widest">
+            <div className="vip-pass-footnote">
               MEDIA ONLY · NON TRANSFERABLE
             </div>
 
             <div
-              className="mt-3 flex items-center justify-center gap-2 font-mono-tech text-[10px] tracking-[0.2em]"
+              className={`vip-pass-download ${hover ? "is-hovered" : ""}`}
               style={{ color: hover ? accent : "rgba(255,255,255,0.6)" }}
             >
               <DownloadSimple size={14} weight="bold" /> DOWNLOAD .ZIP
@@ -247,7 +245,7 @@ export function VipPass() {
           </div>
 
           <motion.div
-            className="pointer-events-none absolute inset-0 opacity-30 mix-blend-screen"
+            className="vip-pass-card-light"
             style={{
               x: sheenX,
               y: sheenY,

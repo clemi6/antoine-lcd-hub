@@ -17,7 +17,7 @@ export function StrobeLayer({ active }: { active: boolean }) {
   if (!active) return null;
   return (
     <div
-      className="fixed inset-0 z-[55] pointer-events-none strobe-active"
+      className="strobe-active"
       style={{ background: "white" }}
     />
   );
