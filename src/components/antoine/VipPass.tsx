@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from "react";
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { DownloadSimple } from "@phosphor-icons/react";
 import "./antoine.css";
 
@@ -32,6 +32,10 @@ export function VipPass({ theme = "light" }: VipPassProps) {
   const rotX = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
   const rotY = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
   const swing = useSpring(useMotionValue(0), { stiffness: 45, damping: 6, mass: 1.5 });
+
+  const shadow = useTransform(rotY, (v) => `${v / 2}px ${20 + Math.abs(v)}px 40px rgba(0,0,0,0.6)`);
+  const sheenX = useTransform(rotY, (v) => -v * 6);
+  const sheenY = useTransform(rotX, (v) => -v * 6);
 
   const [hover, setHover] = useState(false);
   const [isReceivingData, setIsReceivingData] = useState(false);
@@ -203,7 +207,7 @@ export function VipPass({ theme = "light" }: VipPassProps) {
             rotateY: rotY,
             originY: 0,
             transformStyle: "preserve-3d",
-            boxShadow: cardShadow,
+            boxShadow: shadow,
           }}
           className="vip-pass-card"
         >
@@ -229,8 +233,16 @@ export function VipPass({ theme = "light" }: VipPassProps) {
 
             <div className="vip-pass-barcode">
               {Array.from({ length: 32 }).map((_, i) => {
-                const barWidth = ((i * 13) % 3) + 1;
-                const spaceWidth = ((i * 7) % 2) + 1;
+                const barWidths = [
+                  4, 1, 3, 2, 4, 2, 4, 1, 4, 3, 2, 4, 1, 4, 4, 2, 3, 1, 4, 4, 2, 4, 1, 3, 4, 2, 4,
+                  1, 4, 3, 2, 4,
+                ];
+                const spaceWidths = [
+                  2, 3, 2, 3, 2, 2, 3, 2, 2, 3, 2, 3, 2, 2, 3, 2, 3, 2, 2, 3, 2, 3, 2, 3, 2, 2, 3,
+                  2, 3, 2, 3, 2,
+                ];
+                const barWidth = barWidths[i] ?? 2;
+                const spaceWidth = i === 31 ? 0 : (spaceWidths[i] ?? 1);
                 return (
                   <div
                     key={i}
@@ -254,9 +266,12 @@ export function VipPass({ theme = "light" }: VipPassProps) {
             </div>
           </div>
 
-          <div
+          <motion.div
             className="vip-pass-card-light"
             style={{
+              x: sheenX,
+              y: sheenY,
+              scale: 2,
               background: lightGradient,
             }}
           />
