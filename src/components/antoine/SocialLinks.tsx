@@ -6,6 +6,9 @@ import {
   FaSoundcloud,
   FaTiktok,
   FaYoutube,
+  FaSpotify,
+  FaDeezer,
+  FaApple,
 } from "react-icons/fa6";
 import socials from "@/data/socials.json";
 import "./antoine.css";
@@ -16,6 +19,9 @@ const iconMap: Record<string, IconType> = {
   FaSoundcloud,
   FaBandcamp,
   FaYoutube,
+  FaSpotify,
+  FaDeezer,
+  FaApple,
 };
 
 const listVariants = {

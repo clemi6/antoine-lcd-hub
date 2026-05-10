@@ -518,6 +518,78 @@
   white-space: pre-wrap;
 }
 
+/* WANKID Styles */
+.wankid-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.wankid-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+.wankid-header-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  position: relative;
+}
+
+.wankid-hero-image {
+  width: 100%;
+  max-width: 350px;
+  border-radius: 1rem;
+  object-fit: cover;
+  box-shadow: 0 20px 60px rgba(0, 255, 204, 0.15);
+  border: 1px solid rgba(0, 255, 204, 0.2);
+}
+
+.wankid-title {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #fff;
+  margin: 0;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.wankid-gallery {
+  width: 100%;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.gallery-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  aspect-ratio: 1;
+  border: 1px solid rgba(0, 255, 204, 0.1);
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 300ms ease;
+}
+
+.gallery-item:hover img {
+  transform: scale(1.05);
+}
+
 @media (min-width: 640px) {
   .app-main {
     padding-left: 1.25rem;
@@ -538,5 +610,13 @@
 
   .carousel-card--live {
     width: 20rem;
+  }
+
+  .wankid-title {
+    font-size: 4rem;
+  }
+
+  .gallery-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
