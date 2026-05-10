@@ -58,20 +58,12 @@ export function SocialLinks() {
             target="_blank"
             rel="noreferrer"
             variants={itemVariants}
-            whileHover={{ y: -4, scale: 1.02 }}
-            whileTap={{ scale: 0.96 }}
-            className="social-card"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="social-icon-link"
+            title={social.name}
           >
-            <div className="social-card-ripple" />
-            <div className="social-card-body">
-              <div>
-                <div className="social-card-meta">SOCIAL</div>
-                <div className="social-card-name">{social.name}</div>
-              </div>
-              <div className="social-card-icon">
-                <Icon size={20} />
-              </div>
-            </div>
+            <Icon size={32} />
           </motion.a>
         );
       })}
