@@ -403,18 +403,6 @@ body[data-theme="dark"] .app-shell {
   color: black;
 }
 
-.section-footer {
-  padding-top: 1.5rem;
-  text-align: center;
-}
-
-.section-footer-text {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.4em;
-  color: rgba(255, 255, 255, 0.25);
-}
-
 .route-error,
 .not-found {
   display: flex;
