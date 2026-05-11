@@ -10,6 +10,7 @@ import {
   FaDeezer,
   FaApple,
 } from "react-icons/fa6";
+import { SiApplemusic } from "react-icons/si";
 import socials from "@/data/socials.json";
 import "./antoine.css";
 
@@ -22,6 +23,7 @@ const iconMap: Record<string, IconType> = {
   FaSpotify,
   FaDeezer,
   FaApple,
+  SiApplemusic,
 };
 
 const listVariants = {
