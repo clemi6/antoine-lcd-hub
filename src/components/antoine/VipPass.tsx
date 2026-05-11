@@ -178,7 +178,15 @@ export function VipPass({ theme = "light" }: VipPassProps) {
       const simulatedMouseY = deltaY / maxTilt;
       const simulatedMouseX = deltaX / maxTilt;
 
-      applyTilt(-simulatedMouseY * 35, -simulatedMouseX * 35, -simulatedMouseX * 12);
+      const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+      const frontBackDamping = isTouchDevice ? 0.22 : 1;
+      const diagonalDamping = isTouchDevice ? 0.6 : 1;
+
+      applyTilt(
+        -simulatedMouseY * 35 * frontBackDamping,
+        -simulatedMouseX * 35 * diagonalDamping,
+        -simulatedMouseX * 12 * diagonalDamping,
+      );
     },
     [applyTilt],
   );
