@@ -1122,7 +1122,27 @@ body[data-theme="dark"] .gallery-item {
 }
 
 .catalog-grid--carousel {
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 420px) {
+  .catalog-card {
+    grid-template-columns: 4.6rem minmax(0, 1fr) auto;
+    gap: 0.6rem;
+    padding: 0.6rem;
+  }
+
+  .catalog-art-label {
+    font-size: 1.25rem;
+  }
+
+  .catalog-meta h4 {
+    font-size: 1.1rem;
+  }
+
+  .catalog-grid {
+    gap: 0.6rem;
+  }
 }
 
 .catalog-card {
