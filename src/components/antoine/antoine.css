@@ -61,11 +61,11 @@ body[data-theme="dark"] .social-icon-link:hover {
   flex-direction: column;
   align-items: center;
   padding-top: 0;
-  /* increase bottom padding so shadows aren't clipped when we hide overflow */
-  padding-bottom: 2.5rem;
-  /* Prevent transformed card/shadows from causing page scroll/shift */
-  overflow: hidden;
-  contain: layout paint;
+  padding-bottom: 4rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  overflow: visible;
+  contain: layout;
 }
 
 .vip-pass-stage {
@@ -73,9 +73,11 @@ body[data-theme="dark"] .social-icon-link:hover {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100%;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
   transform-origin: top;
-  overflow: visible; /* ensure stage doesn't clip card shadow */
+  overflow: visible;
   z-index: 20; /* keep pass above visuals */
 }
 
@@ -89,7 +91,7 @@ body[data-theme="dark"] .social-icon-link:hover {
   position: relative;
   display: flex;
   justify-content: center;
-  width: 12.5rem;
+  width: 14.375rem;
   height: 9.375rem;
   margin-bottom: -1.25rem;
   pointer-events: none;
@@ -110,11 +112,12 @@ body[data-theme="dark"] .social-icon-link:hover {
 .vip-pass-lanyard-left {
   background-size: 180% 40%;
   background-position: calc(50% + var(--lx, 0px)) calc(35% + var(--ly, 0px));
+  left: calc(50% - 1rem);
   transform-origin: bottom right;
 }
 
 .vip-pass-lanyard-right {
-  left: 50%;
+  left: calc(50% + 0rem);
   transform: rotate(12deg);
   transform-origin: bottom left;
 }
