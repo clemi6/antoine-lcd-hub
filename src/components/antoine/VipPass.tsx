@@ -23,8 +23,8 @@ const POINTER_SWING = 12;
 const POINTER_LIGHT_MULTIPLIER = 6;
 const MOBILE_TILT = 56;
 const MOBILE_SWING = 22;
-// Wider deadzone: small device movements won't trigger lateral unlocking
-const MOBILE_CENTER_DEADZONE = 22;
+// Deadzone: small device movements won't trigger lateral unlocking
+const MOBILE_CENTER_DEADZONE = 10;
 // Require more stable readings before considering the device 'out of jitter'
 const MOBILE_CENTER_STABLE_READINGS = 4;
 const MOBILE_CENTER_TILT = 1.8;
@@ -60,6 +60,7 @@ export function VipPass({ theme = "light" }: VipPassProps) {
   const [isReceivingData, setIsReceivingData] = useState(false);
   const mobileStableReadingsRef = useRef(0);
   const mobileCenterLockRef = useRef(false);
+  const wasInDeadzoneRef = useRef(false);
 
   const downloadColor = hover
     ? accent
@@ -349,12 +350,19 @@ export function VipPass({ theme = "light" }: VipPassProps) {
 
       if (inDeadzone) {
         mobileCenterLockRef.current = true;
+        wasInDeadzoneRef.current = true;
         // Completely frozen: no rotation, no swing
         animatePass(0, 0, 0);
         return;
-      } else {
-        mobileCenterLockRef.current = false;
       }
+
+      // If we just exited the deadzone, trigger settlement with elastic swing
+      if (wasInDeadzoneRef.current) {
+        wasInDeadzoneRef.current = false;
+        settleMobilePass();
+      }
+
+      mobileCenterLockRef.current = false;
 
       // If we just exited the deadzone and are now moving, reset stable counter
       mobileStableReadingsRef.current = 0;
