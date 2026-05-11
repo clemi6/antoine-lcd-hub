@@ -66,6 +66,7 @@ export function VipPass({ theme = "light" }: VipPassProps) {
     x: null,
     y: null,
   });
+  const lastOrientationAngleRef = useRef<number | null>(null);
 
   const animatePass = useCallback((nextRotX: number, nextRotY: number, nextSwing: number) => {
     const card = cardRef.current;
@@ -320,6 +321,17 @@ export function VipPass({ theme = "light" }: VipPassProps) {
           normX = e.gamma;
           normY = e.beta;
       }
+
+      if (lastOrientationAngleRef.current !== null && lastOrientationAngleRef.current !== angle) {
+        lastOrientationAngleRef.current = angle;
+        initialOrientation.current = { x: normX, y: normY };
+        mobileStableReadingsRef.current = 0;
+        mobileCenterLockRef.current = false;
+        settleMobilePass();
+        return;
+      }
+
+      lastOrientationAngleRef.current = angle;
 
       if (initialOrientation.current.x === null) {
         initialOrientation.current = { x: normX, y: normY };
