@@ -1,4 +1,5 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { DownloadSimple } from "@phosphor-icons/react";
 import "./antoine.css";
@@ -28,6 +29,8 @@ export function VipPass({ theme = "light" }: VipPassProps) {
       : "linear-gradient(135deg, transparent 40%, rgba(199,165,117,0.22) 50%, transparent 60%)";
 
   const ref = useRef<HTMLAnchorElement>(null);
+  const placeholderRef = useRef<HTMLDivElement>(null);
+  const [overlayRect, setOverlayRect] = useState<null | DOMRect>(null);
 
   const rotX = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
   const rotY = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
@@ -110,13 +113,29 @@ export function VipPass({ theme = "light" }: VipPassProps) {
           normY = e.beta;
       }
 
+      // ignore very small motions / flat device to avoid jumps
+      const INIT_THRESHOLD_DEG = 6; // degrees
+      const flatThreshold = Math.abs(normX) + Math.abs(normY) < INIT_THRESHOLD_DEG;
+
       if (initialOrientation.current.x === null) {
+        if (flatThreshold) {
+          // device is essentially flat; wait for a meaningful tilt to establish baseline
+          return;
+        }
         initialOrientation.current = { x: normX, y: normY };
         return;
       }
 
       let deltaX = normX - (initialOrientation.current.x ?? 0);
       let deltaY = normY - (initialOrientation.current.y ?? 0);
+
+      // if device becomes flat again, smoothly reset the motion values to neutral
+      if (flatThreshold) {
+        rotX.set(0);
+        rotY.set(0);
+        swing.set(0);
+        return;
+      }
 
       const maxTilt = 30;
       deltaY = Math.max(-maxTilt, Math.min(maxTilt, deltaY));
@@ -149,6 +168,24 @@ export function VipPass({ theme = "light" }: VipPassProps) {
       });
     };
   }, [handleOrientation]);
+
+  // compute overlay rect (viewport coordinates) for fixed portal rendering
+  const updateOverlayRect = useCallback(() => {
+    const el = placeholderRef.current ?? ref.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    setOverlayRect(r);
+  }, []);
+
+  useLayoutEffect(() => {
+    updateOverlayRect();
+    window.addEventListener("resize", updateOverlayRect);
+    window.addEventListener("scroll", updateOverlayRect, { passive: true });
+    return () => {
+      window.removeEventListener("resize", updateOverlayRect);
+      window.removeEventListener("scroll", updateOverlayRect);
+    };
+  }, [updateOverlayRect]);
 
   return (
     <div className="vip-pass-shell" style={{ perspective: 1000 }}>
@@ -193,89 +230,109 @@ export function VipPass({ theme = "light" }: VipPassProps) {
           <div className="vip-pass-clip-bottom" />
         </div>
 
-        {/* LA CARTE VIP */}
-        <motion.a
-          ref={ref}
-          href="#press-kit"
-          download
-          onPointerMove={onMove}
-          onPointerEnter={() => setHover(true)}
-          onPointerLeave={onLeave}
-          whileTap={{ scale: 0.97 }}
-          style={{
-            rotateX: rotX,
-            rotateY: rotY,
-            originY: 0,
-            transformStyle: "preserve-3d",
-            boxShadow: shadow,
-          }}
-          className="vip-pass-card"
-        >
-          {isReceivingData && <div className="vip-pass-card-led" />}
+        {/* LA CARTE VIP: placeholder in flow to reserve space */}
+        <div
+          ref={placeholderRef}
+          className="vip-pass-card vip-pass-card-placeholder"
+          aria-hidden="true"
+          style={{ visibility: "hidden" }}
+        />
 
-          <div className="vip-pass-card-slot" />
+        {/* Portal overlay: render the interactive card in a fixed layer so transforms/shadows don't affect document flow */}
+        {overlayRect && typeof document !== "undefined"
+          ? createPortal(
+              <motion.a
+                ref={ref}
+                href="#press-kit"
+                download
+                onPointerMove={onMove}
+                onPointerEnter={() => setHover(true)}
+                onPointerLeave={onLeave}
+                whileTap={{ scale: 0.97 }}
+                style={{
+                  position: "fixed",
+                  top: overlayRect.top,
+                  left: overlayRect.left,
+                  width: overlayRect.width,
+                  height: overlayRect.height,
+                  rotateX: rotX,
+                  rotateY: rotY,
+                  originY: 0,
+                  transformStyle: "preserve-3d",
+                  boxShadow: shadow,
+                  zIndex: 9999,
+                  touchAction: "none",
+                }}
+                className="vip-pass-card"
+              >
+                {isReceivingData && <div className="vip-pass-card-led" />}
 
-          <div className="vip-pass-card-content">
-            <div className="vip-pass-tagline" style={{ color: accent }}>
-              ★ ALL ACCESS ★
-            </div>
-            <div className="vip-pass-title">VIP</div>
-            <div className="vip-pass-subtitle">PRESS KIT</div>
+                <div className="vip-pass-card-slot" />
 
-            <div className="vip-pass-meta">
-              <span>NAME</span>
-              <span>MEDIA / PROMO</span>
-            </div>
-            <div className="vip-pass-meta-2">
-              <span>ID</span>
-              <span>LCD-2026-0033</span>
-            </div>
+                <div className="vip-pass-card-content">
+                  <div className="vip-pass-tagline" style={{ color: accent }}>
+                    ★ ALL ACCESS ★
+                  </div>
+                  <div className="vip-pass-title">VIP</div>
+                  <div className="vip-pass-subtitle">PRESS KIT</div>
 
-            <div className="vip-pass-barcode">
-              {Array.from({ length: 32 }).map((_, i) => {
-                const barWidths = [
-                  4, 1, 3, 2, 4, 2, 4, 1, 4, 3, 2, 4, 1, 4, 4, 2, 3, 1, 4, 4, 2, 4, 1, 3, 4, 2, 4,
-                  1, 4, 3, 2, 4,
-                ];
-                const spaceWidths = [
-                  2, 3, 2, 3, 2, 2, 3, 2, 2, 3, 2, 3, 2, 2, 3, 2, 3, 2, 2, 3, 2, 3, 2, 3, 2, 2, 3,
-                  2, 3, 2, 3, 2,
-                ];
-                const barWidth = barWidths[i] ?? 2;
-                const spaceWidth = i === 31 ? 0 : (spaceWidths[i] ?? 1);
-                return (
+                  <div className="vip-pass-meta">
+                    <span>NAME</span>
+                    <span>MEDIA / PROMO</span>
+                  </div>
+                  <div className="vip-pass-meta-2">
+                    <span>ID</span>
+                    <span>LCD-2026-0033</span>
+                  </div>
+
+                  <div className="vip-pass-barcode">
+                    {Array.from({ length: 32 }).map((_, i) => {
+                      const barWidths = [
+                        4, 1, 3, 2, 4, 2, 4, 1, 4, 3, 2, 4, 1, 4, 4, 2, 3, 1, 4, 4, 2, 4, 1, 3, 4, 2,
+                        4, 1, 4, 3, 2, 4,
+                      ];
+                      const spaceWidths = [
+                        2, 3, 2, 3, 2, 2, 3, 2, 2, 3, 2, 3, 2, 2, 3, 2, 3, 2, 2, 3, 2, 3, 2, 3, 2, 2,
+                        3, 2, 3, 2, 3, 2,
+                      ];
+                      const barWidth = barWidths[i] ?? 2;
+                      const spaceWidth = i === 31 ? 0 : (spaceWidths[i] ?? 1);
+                      return (
+                        <div
+                          key={i}
+                          className="vip-pass-barcode-bar"
+                          style={{
+                            width: `${barWidth}px`,
+                            marginRight: i === 31 ? "0px" : `${spaceWidth}px`,
+                            height: "100%",
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                  <div className="vip-pass-footnote">MEDIA ONLY · NON TRANSFERABLE</div>
+
                   <div
-                    key={i}
-                    className="vip-pass-barcode-bar"
-                    style={{
-                      width: `${barWidth}px`,
-                      marginRight: i === 31 ? "0px" : `${spaceWidth}px`,
-                      height: "100%",
-                    }}
-                  />
-                );
-              })}
-            </div>
-            <div className="vip-pass-footnote">MEDIA ONLY · NON TRANSFERABLE</div>
+                    className={`vip-pass-download ${hover ? "is-hovered" : ""}`}
+                    style={{ color: downloadColor }}
+                  >
+                    <DownloadSimple size={14} weight="bold" /> DOWNLOAD .ZIP
+                  </div>
+                </div>
 
-            <div
-              className={`vip-pass-download ${hover ? "is-hovered" : ""}`}
-              style={{ color: downloadColor }}
-            >
-              <DownloadSimple size={14} weight="bold" /> DOWNLOAD .ZIP
-            </div>
-          </div>
-
-          <motion.div
-            className="vip-pass-card-light"
-            style={{
-              x: sheenX,
-              y: sheenY,
-              scale: 2,
-              background: lightGradient,
-            }}
-          />
-        </motion.a>
+                <motion.div
+                  className="vip-pass-card-light"
+                  style={{
+                    x: sheenX,
+                    y: sheenY,
+                    scale: 2,
+                    background: lightGradient,
+                  }}
+                />
+              </motion.a>,
+              document.body,
+            )
+          : null}
       </motion.div>
     </div>
   );
