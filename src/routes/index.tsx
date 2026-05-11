@@ -11,6 +11,7 @@ import {
   CaretRight,
 } from "@phosphor-icons/react";
 import { useEffect, useState, type CSSProperties } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import "./routes.css";
 import wankidPhoto3 from "@/assets/ANTOINE_LCD_12-25-6.jpg";
 
@@ -281,6 +282,7 @@ function Index() {
   const [copied, setCopied] = useState(false);
   const [catalogPage, setCatalogPage] = useState(0);
   const [catalogDirection, setCatalogDirection] = useState(1);
+  const isMobile = useIsMobile(768);
   const [lang, setLang] = useState<"fr" | "en">(() => {
     if (typeof window === "undefined") return "en";
     return navigator.language && navigator.language.startsWith("fr") ? "fr" : "en";
@@ -288,12 +290,16 @@ function Index() {
 
   const t = (key: string) => translations[lang]?.[key] ?? key;
 
-  const tracksPerPage = 4;
+  const tracksPerPage = isMobile ? 2 : 4;
   const catalogPageCount = Math.ceil(catalogTracks.length / tracksPerPage);
   const visibleCatalogTracks = catalogTracks.slice(
     catalogPage * tracksPerPage,
     catalogPage * tracksPerPage + tracksPerPage,
   );
+
+  useEffect(() => {
+    setCatalogPage((prev) => Math.min(prev, catalogPageCount - 1));
+  }, [catalogPageCount]);
 
   const paginateCatalog = (nextDirection: 1 | -1) => {
     setCatalogDirection(nextDirection);
