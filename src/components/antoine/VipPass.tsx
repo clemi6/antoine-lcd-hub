@@ -87,7 +87,7 @@ export function VipPass({ theme = "light" }: VipPassProps) {
 
     if (card) {
       gsap.to(card, {
-        rotateX: nextRotX,
+        rotateX: 0,
         rotateY: nextRotY,
         boxShadow: `${nextRotY / 2}px ${20 + Math.abs(nextRotY)}px 40px rgba(0,0,0,0.6)`,
         duration: 0.35,
@@ -168,22 +168,13 @@ export function VipPass({ theme = "light" }: VipPassProps) {
     mobileCenterLockRef.current = true;
 
     if (card) {
-      gsap
-        .timeline({ defaults: { overwrite: true } })
-        .to(card, {
-          rotateX: MOBILE_CENTER_TILT,
-          rotateY: 0,
-          scale: 1,
-          boxShadow: CARD_REST_SHADOW,
-          duration: 0.14,
-          ease: "power2.out",
-        })
-        .to(card, {
-          rotateX: 0,
-          rotateY: 0,
-          duration: 0.32,
-          ease: "power3.out",
-        });
+      gsap.to(card, {
+        scale: 1,
+        boxShadow: CARD_REST_SHADOW,
+        duration: 0.2,
+        ease: "power2.out",
+        overwrite: true,
+      });
     }
 
     if (light) {
@@ -261,8 +252,7 @@ export function VipPass({ theme = "light" }: VipPassProps) {
     const r = el.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width - 0.5;
     const y = (e.clientY - r.top) / r.height - 0.5;
-
-    animatePass(-y * POINTER_TILT, -x * POINTER_TILT, -x * POINTER_SWING);
+    animatePass(0, -x * POINTER_TILT, -x * POINTER_SWING);
   };
 
   const onLeave = () => {
@@ -358,10 +348,11 @@ export function VipPass({ theme = "light" }: VipPassProps) {
       if (isLaterallyNearCenter) {
         mobileStableReadingsRef.current += 1;
         if (mobileStableReadingsRef.current >= MOBILE_CENTER_STABLE_READINGS) {
-          // lock lateral axis and allow a subtle forward/back tilt + gentle swing
+          // lock lateral axis and allow a subtle forward/back swing ONLY (no rotateX)
           mobileCenterLockRef.current = true;
           const limitedY = Math.max(-1, Math.min(1, simulatedMouseY));
-          animatePass(-limitedY * MOBILE_NONLATERAL_TILT, 0, -limitedY * MOBILE_CENTER_SWING_AMP);
+          // no rotateX, no rotateY; only stage swing based on Y
+          animatePass(0, 0, -limitedY * MOBILE_CENTER_SWING_AMP);
           return;
         }
       } else {
