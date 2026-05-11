@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from "react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import gsap from "gsap";
 import { DownloadSimple } from "@phosphor-icons/react";
 import "./antoine.css";
 
@@ -20,22 +20,29 @@ type ScreenWithOrientation = Screen & {
 export function VipPass({ theme = "light" }: VipPassProps) {
   const accent = theme === "dark" ? "#63dbc4" : "#c7a575";
   const ribbonShadow = theme === "dark" ? `${accent}52` : `${accent}40`;
-  const cardShadow =
-    theme === "dark" ? "0 18px 36px rgba(0,0,0,0.62)" : "0 18px 36px rgba(60,43,24,0.28)";
   const lightGradient =
     theme === "dark"
       ? "linear-gradient(135deg, transparent 40%, rgba(99,219,196,0.22) 50%, transparent 60%)"
       : "linear-gradient(135deg, transparent 40%, rgba(199,165,117,0.22) 50%, transparent 60%)";
 
-  const ref = useRef<HTMLAnchorElement>(null);
-
-  const rotX = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
-  const rotY = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
-  const swing = useSpring(useMotionValue(0), { stiffness: 45, damping: 6, mass: 1.5 });
-
-  const shadow = useTransform(rotY, (v) => `${v / 2}px ${20 + Math.abs(v)}px 40px rgba(0,0,0,0.6)`);
-  const sheenX = useTransform(rotY, (v) => -v * 6);
-  const sheenY = useTransform(rotX, (v) => -v * 6);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLAnchorElement>(null);
+  const lightRef = useRef<HTMLDivElement>(null);
+  const animationApi = useRef<{
+    setStageRotate: ((value: number) => void) | null;
+    setCardRotateX: ((value: number) => void) | null;
+    setCardRotateY: ((value: number) => void) | null;
+    setLightX: ((value: number) => void) | null;
+    setLightY: ((value: number) => void) | null;
+    setShadow: ((value: string) => void) | null;
+  }>({
+    setStageRotate: null,
+    setCardRotateX: null,
+    setCardRotateY: null,
+    setLightX: null,
+    setLightY: null,
+    setShadow: null,
+  });
 
   const [hover, setHover] = useState(false);
   const [isReceivingData, setIsReceivingData] = useState(false);
@@ -51,23 +58,69 @@ export function VipPass({ theme = "light" }: VipPassProps) {
     y: null,
   });
 
+  useEffect(() => {
+    const stage = stageRef.current;
+    const card = cardRef.current;
+    const light = lightRef.current;
+
+    if (!stage || !card || !light) return;
+
+    animationApi.current = {
+      setStageRotate: gsap.quickTo(stage, "rotation", { duration: 0.55, ease: "power3.out" }),
+      setCardRotateX: gsap.quickTo(card, "rotationX", { duration: 0.45, ease: "power3.out" }),
+      setCardRotateY: gsap.quickTo(card, "rotationY", { duration: 0.45, ease: "power3.out" }),
+      setLightX: gsap.quickTo(light, "x", { duration: 0.45, ease: "power3.out" }),
+      setLightY: gsap.quickTo(light, "y", { duration: 0.45, ease: "power3.out" }),
+      setShadow: (value: string) => {
+        gsap.to(card, { boxShadow: value, duration: 0.35, overwrite: "auto", ease: "power2.out" });
+      },
+    };
+
+    gsap.set(light, { scale: 2 });
+
+    return () => {
+      animationApi.current = {
+        setStageRotate: null,
+        setCardRotateX: null,
+        setCardRotateY: null,
+        setLightX: null,
+        setLightY: null,
+        setShadow: null,
+      };
+    };
+  }, []);
+
+  const applyTilt = useCallback((cardTiltX: number, cardTiltY: number, stageTilt: number) => {
+    animationApi.current.setStageRotate?.(stageTilt);
+    animationApi.current.setCardRotateX?.(cardTiltX);
+    animationApi.current.setCardRotateY?.(cardTiltY);
+    animationApi.current.setLightX?.(-cardTiltY * 6);
+    animationApi.current.setLightY?.(-cardTiltX * 6);
+    animationApi.current.setShadow?.(
+      `${cardTiltY / 2}px ${20 + Math.abs(cardTiltY)}px 40px rgba(0,0,0,0.6)`,
+    );
+  }, []);
+
   const onMove = (e: React.PointerEvent) => {
-    const el = ref.current;
+    const el = cardRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width - 0.5;
     const y = (e.clientY - r.top) / r.height - 0.5;
 
-    rotY.set(-x * 35);
-    rotX.set(-y * 35);
-    swing.set(-x * 12);
+    applyTilt(-y * 35, -x * 35, -x * 12);
   };
 
   const onLeave = () => {
-    rotX.set(0);
-    rotY.set(0);
-    swing.set(0);
+    applyTilt(0, 0, 0);
     setHover(false);
+  };
+
+  const animateTapScale = (scale: number) => {
+    const card = cardRef.current;
+    if (!card) return;
+
+    gsap.to(card, { scale, duration: 0.18, ease: "power2.out" });
   };
 
   const handleOrientation = useCallback(
@@ -125,11 +178,9 @@ export function VipPass({ theme = "light" }: VipPassProps) {
       const simulatedMouseY = deltaY / maxTilt;
       const simulatedMouseX = deltaX / maxTilt;
 
-      rotY.set(-simulatedMouseX * 35);
-      rotX.set(-simulatedMouseY * 35);
-      swing.set(-simulatedMouseX * 12);
+      applyTilt(-simulatedMouseY * 35, -simulatedMouseX * 35, -simulatedMouseX * 12);
     },
-    [rotX, rotY, swing],
+    [applyTilt],
   );
 
   useEffect(() => {
@@ -152,7 +203,7 @@ export function VipPass({ theme = "light" }: VipPassProps) {
 
   return (
     <div className="vip-pass-shell" style={{ perspective: 1000 }}>
-      <motion.div style={{ rotate: swing, originY: 0 }} className="vip-pass-stage">
+      <div ref={stageRef} className="vip-pass-stage">
         {/* LE TOUR DE COU EN V (FONDU ULTRA DOUX) */}
         <div
           className="vip-pass-lanyard"
@@ -194,21 +245,17 @@ export function VipPass({ theme = "light" }: VipPassProps) {
         </div>
 
         {/* LA CARTE VIP */}
-        <motion.a
-          ref={ref}
+        <a
+          ref={cardRef}
           href="#press-kit"
           download
           onPointerMove={onMove}
           onPointerEnter={() => setHover(true)}
           onPointerLeave={onLeave}
-          whileTap={{ scale: 0.97 }}
-          style={{
-            rotateX: rotX,
-            rotateY: rotY,
-            originY: 0,
-            transformStyle: "preserve-3d",
-            boxShadow: shadow,
-          }}
+          onPointerDown={() => animateTapScale(0.97)}
+          onPointerUp={() => animateTapScale(1)}
+          onPointerCancel={() => animateTapScale(1)}
+          style={{ transformStyle: "preserve-3d", transformOrigin: "center top" }}
           className="vip-pass-card"
         >
           {isReceivingData && <div className="vip-pass-card-led" />}
@@ -266,17 +313,13 @@ export function VipPass({ theme = "light" }: VipPassProps) {
             </div>
           </div>
 
-          <motion.div
+          <div
+            ref={lightRef}
             className="vip-pass-card-light"
-            style={{
-              x: sheenX,
-              y: sheenY,
-              scale: 2,
-              background: lightGradient,
-            }}
+            style={{ background: lightGradient }}
           />
-        </motion.a>
-      </motion.div>
+        </a>
+      </div>
     </div>
   );
 }
