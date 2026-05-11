@@ -27,6 +27,9 @@ const MOBILE_CENTER_DEADZONE = 10;
 const MOBILE_CENTER_STABLE_READINGS = 3;
 const MOBILE_CENTER_TILT = 1.8;
 const MOBILE_CENTER_SWING = 5;
+const MOBILE_NONLATERAL_TILT = 14;
+const MOBILE_CENTER_SWING_AMP = 6;
+const CROSS_AXIS_SUPPRESSION = 0.8; // how much to suppress lateral movement when forward tilt is strong (0..1)
 const RELEASE_OVERSHOOT_MAX = 6;
 const RELEASE_OVERSHOOT_FACTOR = 0.28;
 const RELEASE_OVERSHOOT_FALLBACK = 4.2;
@@ -345,14 +348,20 @@ export function VipPass({ theme = "light" }: VipPassProps) {
       deltaY = Math.max(-maxTilt, Math.min(maxTilt, deltaY));
       deltaX = Math.max(-maxTilt, Math.min(maxTilt, deltaX));
 
-      const isNearCenter = Math.abs(deltaX) <= MOBILE_CENTER_DEADZONE && Math.abs(deltaY) <= MOBILE_CENTER_DEADZONE;
+      const simulatedMouseY = deltaY / maxTilt;
+      const simulatedMouseX = deltaX / maxTilt;
 
-      if (isNearCenter) {
+      // Consider non-tilt only on the lateral axis: if there's no left/right tilt,
+      // keep lateral locked to center while still allowing a small forward/back tilt.
+      const isLaterallyNearCenter = Math.abs(deltaX) <= MOBILE_CENTER_DEADZONE;
+
+      if (isLaterallyNearCenter) {
         mobileStableReadingsRef.current += 1;
         if (mobileStableReadingsRef.current >= MOBILE_CENTER_STABLE_READINGS) {
-          if (!mobileCenterLockRef.current) {
-            settleMobilePass();
-          }
+          // lock lateral axis and allow a subtle forward/back tilt + gentle swing
+          mobileCenterLockRef.current = true;
+          const limitedY = Math.max(-1, Math.min(1, simulatedMouseY));
+          animatePass(-limitedY * MOBILE_NONLATERAL_TILT, 0, -limitedY * MOBILE_CENTER_SWING_AMP);
           return;
         }
       } else {
@@ -360,13 +369,16 @@ export function VipPass({ theme = "light" }: VipPassProps) {
         mobileCenterLockRef.current = false;
       }
 
-      const simulatedMouseY = deltaY / maxTilt;
-      const simulatedMouseX = deltaX / maxTilt;
+      // Cross-axis dampening: when the device is tilted strongly forward/back (Y),
+      // reduce the lateral (X) response to avoid the card shooting left/right.
+      const suppression = Math.max(0, 1 - Math.abs(simulatedMouseY) * CROSS_AXIS_SUPPRESSION);
+      const effectiveSimX = Math.max(-1, Math.min(1, simulatedMouseX * suppression));
+      const effectiveSimY = Math.max(-1, Math.min(1, simulatedMouseY));
 
       animatePass(
-        -simulatedMouseY * MOBILE_TILT,
-        -simulatedMouseX * MOBILE_TILT,
-        -simulatedMouseX * MOBILE_SWING,
+        -effectiveSimY * MOBILE_TILT,
+        -effectiveSimX * MOBILE_TILT,
+        -effectiveSimX * MOBILE_SWING,
       );
     },
     [animatePass, settleMobilePass],
