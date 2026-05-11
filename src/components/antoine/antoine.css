@@ -61,8 +61,11 @@ body[data-theme="dark"] .social-icon-link:hover {
   flex-direction: column;
   align-items: center;
   padding-top: 0;
-  padding-bottom: 1.5rem;
-  overflow: visible; /* allow shadows to render outside */
+  /* increase bottom padding so shadows aren't clipped when we hide overflow */
+  padding-bottom: 2.5rem;
+  /* Prevent transformed card/shadows from causing page scroll/shift */
+  overflow: hidden;
+  contain: layout paint;
 }
 
 .vip-pass-stage {
@@ -151,6 +154,9 @@ body[data-theme="dark"] .social-icon-link:hover {
   border: 1px solid rgba(75, 56, 31, 0.18);
   background: #f6efe3;
   z-index: 30; /* ensure the card sits above stage shadow */
+  /* promote to its own layer and hint browser it will transform */
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 body[data-theme="dark"] .vip-pass-card {
