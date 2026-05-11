@@ -186,6 +186,74 @@ export function VipPass({ theme = "light" }: VipPassProps) {
       window.removeEventListener("scroll", updateOverlayRect);
     };
   }, [updateOverlayRect]);
+  return (
+  // Reusable inner content of the card so we can render it both hidden (placeholder)
+  // to reserve layout space and interactive in the fixed portal.
+  const cardInner = (
+    <>
+      {isReceivingData && <div className="vip-pass-card-led" />}
+
+      <div className="vip-pass-card-slot" />
+
+      <div className="vip-pass-card-content">
+        <div className="vip-pass-tagline" style={{ color: accent }}>
+          ★ ALL ACCESS ★
+        </div>
+        <div className="vip-pass-title">VIP</div>
+        <div className="vip-pass-subtitle">PRESS KIT</div>
+
+        <div className="vip-pass-meta">
+          <span>NAME</span>
+          <span>MEDIA / PROMO</span>
+        </div>
+        <div className="vip-pass-meta-2">
+          <span>ID</span>
+          <span>LCD-2026-0033</span>
+        </div>
+
+        <div className="vip-pass-barcode">
+          {Array.from({ length: 32 }).map((_, i) => {
+            const barWidths = [
+              4, 1, 3, 2, 4, 2, 4, 1, 4, 3, 2, 4, 1, 4, 4, 2, 3, 1, 4, 4, 2, 4, 1, 3, 4, 2, 4,
+              1, 4, 3, 2, 4,
+            ];
+            const spaceWidths = [
+              2, 3, 2, 3, 2, 2, 3, 2, 2, 3, 2, 3, 2, 2, 3, 2, 3, 2, 2, 3, 2, 3, 2, 3, 2, 2, 3,
+              2, 3, 2, 3, 2,
+            ];
+            const barWidth = barWidths[i] ?? 2;
+            const spaceWidth = i === 31 ? 0 : (spaceWidths[i] ?? 1);
+            return (
+              <div
+                key={i}
+                className="vip-pass-barcode-bar"
+                style={{
+                  width: `${barWidth}px`,
+                  marginRight: i === 31 ? "0px" : `${spaceWidth}px`,
+                  height: "100%",
+                }}
+              />
+            );
+          })}
+        </div>
+        <div className="vip-pass-footnote">MEDIA ONLY · NON TRANSFERABLE</div>
+
+        <div className={`vip-pass-download ${hover ? "is-hovered" : ""}`} style={{ color: downloadColor }}>
+          <DownloadSimple size={14} weight="bold" /> DOWNLOAD .ZIP
+        </div>
+      </div>
+
+      <motion.div
+        className="vip-pass-card-light"
+        style={{
+          x: sheenX,
+          y: sheenY,
+          scale: 2,
+          background: lightGradient,
+        }}
+      />
+    </>
+  );
 
   return (
     <div className="vip-pass-shell" style={{ perspective: 1000 }}>
@@ -230,13 +298,15 @@ export function VipPass({ theme = "light" }: VipPassProps) {
           <div className="vip-pass-clip-bottom" />
         </div>
 
-        {/* LA CARTE VIP: placeholder in flow to reserve space */}
+        {/* LA CARTE VIP: placeholder in flow to reserve space (hidden but with full content) */}
         <div
           ref={placeholderRef}
           className="vip-pass-card vip-pass-card-placeholder"
           aria-hidden="true"
-          style={{ visibility: "hidden" }}
-        />
+          style={{ visibility: "hidden", pointerEvents: "none" }}
+        >
+          {cardInner}
+        </div>
 
         {/* Portal overlay: render the interactive card in a fixed layer so transforms/shadows don't affect document flow */}
         {overlayRect && typeof document !== "undefined"
@@ -265,70 +335,7 @@ export function VipPass({ theme = "light" }: VipPassProps) {
                 }}
                 className="vip-pass-card"
               >
-                {isReceivingData && <div className="vip-pass-card-led" />}
-
-                <div className="vip-pass-card-slot" />
-
-                <div className="vip-pass-card-content">
-                  <div className="vip-pass-tagline" style={{ color: accent }}>
-                    ★ ALL ACCESS ★
-                  </div>
-                  <div className="vip-pass-title">VIP</div>
-                  <div className="vip-pass-subtitle">PRESS KIT</div>
-
-                  <div className="vip-pass-meta">
-                    <span>NAME</span>
-                    <span>MEDIA / PROMO</span>
-                  </div>
-                  <div className="vip-pass-meta-2">
-                    <span>ID</span>
-                    <span>LCD-2026-0033</span>
-                  </div>
-
-                  <div className="vip-pass-barcode">
-                    {Array.from({ length: 32 }).map((_, i) => {
-                      const barWidths = [
-                        4, 1, 3, 2, 4, 2, 4, 1, 4, 3, 2, 4, 1, 4, 4, 2, 3, 1, 4, 4, 2, 4, 1, 3, 4, 2,
-                        4, 1, 4, 3, 2, 4,
-                      ];
-                      const spaceWidths = [
-                        2, 3, 2, 3, 2, 2, 3, 2, 2, 3, 2, 3, 2, 2, 3, 2, 3, 2, 2, 3, 2, 3, 2, 3, 2, 2,
-                        3, 2, 3, 2, 3, 2,
-                      ];
-                      const barWidth = barWidths[i] ?? 2;
-                      const spaceWidth = i === 31 ? 0 : (spaceWidths[i] ?? 1);
-                      return (
-                        <div
-                          key={i}
-                          className="vip-pass-barcode-bar"
-                          style={{
-                            width: `${barWidth}px`,
-                            marginRight: i === 31 ? "0px" : `${spaceWidth}px`,
-                            height: "100%",
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
-                  <div className="vip-pass-footnote">MEDIA ONLY · NON TRANSFERABLE</div>
-
-                  <div
-                    className={`vip-pass-download ${hover ? "is-hovered" : ""}`}
-                    style={{ color: downloadColor }}
-                  >
-                    <DownloadSimple size={14} weight="bold" /> DOWNLOAD .ZIP
-                  </div>
-                </div>
-
-                <motion.div
-                  className="vip-pass-card-light"
-                  style={{
-                    x: sheenX,
-                    y: sheenY,
-                    scale: 2,
-                    background: lightGradient,
-                  }}
-                />
+                {cardInner}
               </motion.a>,
               document.body,
             )
