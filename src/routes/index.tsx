@@ -1,12 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { VipPass } from "@/components/antoine/VipPass";
 import { SocialLinks } from "@/components/antoine/SocialLinks";
-import { motion } from "framer-motion";
-import { Moon, Sun, EnvelopeSimple, CopySimple } from "@phosphor-icons/react";
-import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Moon,
+  Sun,
+  EnvelopeSimple,
+  CopySimple,
+  CaretLeft,
+  CaretRight,
+} from "@phosphor-icons/react";
+import { useEffect, useState, type CSSProperties } from "react";
 import "./routes.css";
-import wankidPhoto1 from "@/assets/ANTOINE_LCD_12-25-55.jpg";
-import wankidPhoto2 from "@/assets/ANTOINE_LCD_12-25-56.jpg";
 import wankidPhoto3 from "@/assets/ANTOINE_LCD_12-25-6.jpg";
 
 export const Route = createFileRoute("/")({
@@ -14,50 +19,121 @@ export const Route = createFileRoute("/")({
 });
 
 const heroPhoto = wankidPhoto3;
-const galleryPhotos = [wankidPhoto1, wankidPhoto2];
+const contentBackgroundStyle: CSSProperties = {
+  ["--content-bg-image" as string]: `url(${heroPhoto})`,
+};
 
 const artistFacts = [
-  { label: "Alias", value: "Antoine LCD -> WANKID" },
-  { label: "Style", value: "House / Disco-House / Electro" },
-  { label: "Scene", value: "Sets club dynamiques" },
-  { label: "Audience", value: "Pres de 10 000 abonnes sur YouTube" },
-];
+  { key: "alias", value: "Antoine LCD → WANKID" },
+  { key: "style", value: "House / Disco-House / Electro" },
+  { key: "scene", value: { fr: "Sets club dynamiques", en: "Dynamic club sets" } },
+  {
+    key: "audience",
+    value: { fr: "Près de 10 000 abonnés sur YouTube", en: "Nearly 10,000 YouTube subscribers" },
+  },
+] as const;
 
 const latestReleases = [
   {
-    title: "Dernieres sorties SoundCloud",
-    format: "Titres et exclus",
+    titleKey: "latest_releases_title",
+    formatKey: "latest_releases_subtitle",
     soundcloudEmbedUrl:
       "https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/antoinelcd/tracks&color=%23c7a575&auto_play=false&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=true&visual=false",
   },
   {
-    title: "Disco Mainstream / Instrumental",
-    format: "Catalogue Antoine LCD",
+    titleKey: "main_catalog_title",
+    formatKey: "main_catalog_subtitle",
     soundcloudEmbedUrl:
       "https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/antoinelcd&color=%23c7a575&auto_play=false&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=true&visual=false",
   },
 ];
 
-const latestVideos = [
+const catalogTracks = [
   {
-    title: "Chaine YouTube @antoinelcd",
-    source: "YouTube",
-    url: "https://www.youtube.com/@antoinelcd",
-    cta: "Voir la chaine",
+    id: "featured-1",
+    title: "GAZA SLIM & VYBZ KARTEL - One man (Antoine LCD & Badsam Remix)",
+    artist: "BADSAM, ANTOINE LCD",
+    year: "2025",
+    url: "https://soundcloud.com/djbadsam/gaza-slim-vybz-kartel-one-1?utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing",
   },
   {
-    title: "Video live set (upload)",
-    source: "MP4 Upload",
-    url: "",
-    cta: "Ajouter une URL video",
+    id: "featured-2",
+    title: "COLLATERAL DRIFT (ANTOINE LCD EDIT)",
+    artist: "TEEJAY X BURNA BOY",
+    year: "2025",
+    url: "https://soundcloud.com/antoinelcd/collateral-drift-edit-by-antoinelcd?utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing",
+  },
+  {
+    id: "featured-3",
+    title: "BELIEVE IT (ANTOINE LCD EDIT)",
+    artist: "DINOS X RIHANNA, PARTYNEXTDOOR",
+    year: "2024",
+    url: "https://soundcloud.com/antoinelcd/believe-it-edit-by-antoinelcd",
+  },
+  {
+    id: "featured-4",
+    title: "SALE HISTOIRE (ANTOINE LCD EDIT)",
+    artist: "RSKO",
+    year: "2024",
+    url: "https://soundcloud.com/antoinelcd/sal-histoire-edit-by-antoinelcd",
+  },
+  {
+    id: "featured-5",
+    title: "NOUS DEUX (ANTOINE LCD EDIT)",
+    artist: "SDM",
+    year: "2024",
+    url: "https://soundcloud.com/antoinelcd/nous-deux-edit-by-antoinelcd",
+  },
+  {
+    id: "featured-6",
+    title: "MÉCHANTE (ANTOINE LCD EDIT)",
+    artist: "AYA NAKAMURA",
+    year: "2024",
+    url: "https://soundcloud.com/antoinelcd/mechante-edit-by-antoinelcd",
+  },
+  {
+    id: "featured-7",
+    title: "DODO X NESESARI (ANTOINE LCD EDIT)",
+    artist: "TAYC X KIZZ DANIEL",
+    year: "2024",
+    url: "https://soundcloud.com/antoinelcd/dodo-nesesari-edit-by-antoinelcd",
+  },
+  {
+    id: "featured-8",
+    title: "THE SCOTTS (ANTOINE LCD EDIT)",
+    artist: "TRAVIS SCOTT, KID CUDI",
+    year: "2024",
+    url: "https://soundcloud.com/antoinelcd/thescotts-edit-by-antoinelcd",
+  },
+  {
+    id: "featured-9",
+    title: "GUAPA (ANTOINE LCD EDIT)",
+    artist: "GUY2BEZBAR",
+    year: "2024",
+    url: "https://soundcloud.com/antoinelcd/guapa-edit-by-antoinelcd",
+  },
+  {
+    id: "featured-10",
+    title: "TIKI TAKA X DEUX FRÈRES (ANTOINE LCD EDIT)",
+    artist: "VACRA X PNL",
+    year: "2024",
+    url: "https://soundcloud.com/antoinelcd/tiki-taka-deux-freres-edit-by-antoinelcd",
+  },
+  {
+    id: "featured-11",
+    title: "JACK FUEGO (ANTOINE LCD EDIT)",
+    artist: "SDM, PLK",
+    year: "2024",
+    url: "https://soundcloud.com/antoinelcd/jack-fuego-remix-by-antoinelcd",
   },
 ];
 
-const uploadedVideos = [
+const latestVideos = [
   {
-    title: "Aftermovie (upload)",
-    src: "",
-    poster: wankidPhoto2,
+    titleKey: "youtube_channel_title",
+    source: "YouTube",
+    url: "https://www.youtube.com/@antoinelcd",
+    ctaKey: "youtube_channel_cta",
   },
 ];
 
@@ -66,7 +142,7 @@ const upcomingDates = [
     day: "12",
     month: "APR",
     year: "2026",
-    city: "LIMOGES",
+    city: "MULHOUSE",
     venue: "Squ'art Sessions II",
     organizer: "Association Le Squ'art",
     ticketUrl: "",
@@ -75,7 +151,7 @@ const upcomingDates = [
     day: "15",
     month: "FEB",
     year: "2026",
-    city: "LIMOGES",
+    city: "MULHOUSE",
     venue: "Squ'art Sessions",
     organizer: "Association Le Squ'art",
     ticketUrl: "",
@@ -93,7 +169,99 @@ const upcomingDates = [
 
 const bookingEmail = "antoinelcd.contact@gmail.com";
 
+const translations: Record<string, Record<string, string>> = {
+  fr: {
+    bio: "WANKID (ex Antoine LCD) est un DJ et producteur à l'univers House, Disco-House et Electro. Il livre des sets club énergiques et y présente ses productions exclusives.",
+    subtitle: "DJ / PRODUCTEUR / LIVE SETS",
+    links: "LIENS",
+    latest_tracks: "DERNIERS SONS",
+    sets_and_gigs: "SETS ET SOIRÉES",
+    videos: "VIDÉOS",
+    upcoming_dates: "PROCHAINES DATES",
+    press_access: "PRESS ACCESS",
+    booking_contact: "BOOKING / CONTACT",
+    copy_aria: "Copier l'email dans le presse-papiers",
+    open_mail_aria: "Ouvrir le client mail",
+    copied_toast: "Email copié dans le presse-papiers",
+    latest_releases_title: "DERNIÈRES SORTIES SOUNDCLOUD",
+    latest_releases_subtitle: "Titres et exclus",
+    main_catalog_title: "DISCO MAINSTREAM / INSTRUMENTAL",
+    main_catalog_subtitle: "Catalogue Antoine LCD",
+    youtube_channel_title: "CHAÎNE YOUTUBE @ANTOINELCD",
+    youtube_channel_cta: "VOIR LA CHAÎNE",
+    catalog_previous: "Page précédente",
+    catalog_next: "Page suivante",
+    catalog_play: "ÉCOUTER",
+    tickets: "BILLETTERIE",
+    ticket_placeholder: "Billetterie à renseigner",
+    theme_light_aria: "Activer le mode clair",
+    theme_dark_aria: "Activer le mode sombre",
+    lang_fr_aria: "Basculer en français",
+    lang_en_aria: "Basculer en anglais",
+    theme_light: "CLAIR",
+    theme_dark: "SOMBRE",
+    alias: "Alias",
+    style: "Style",
+    scene: "Scène",
+    audience: "Audience",
+    catalog: "CATALOGUE",
+    track_year: "Année",
+  },
+  en: {
+    bio: "WANKID (formerly Antoine LCD) is a DJ and producer working in House, Disco-House and Electro. He delivers energetic club sets and showcases exclusive productions.",
+    subtitle: "DJ / PRODUCER / LIVE SETS",
+    links: "LINKS",
+    latest_tracks: "LATEST TRACKS",
+    sets_and_gigs: "SETS & GIGS",
+    videos: "VIDEOS",
+    upcoming_dates: "UPCOMING DATES",
+    press_access: "PRESS ACCESS",
+    booking_contact: "BOOKING / CONTACT",
+    copy_aria: "Copy email to clipboard",
+    open_mail_aria: "Open mail client",
+    copied_toast: "Email copied to clipboard",
+    latest_releases_title: "LATEST SOUNDCLOUD RELEASES",
+    latest_releases_subtitle: "Tracks and exclusives",
+    main_catalog_title: "MAINSTREAM DISCO / INSTRUMENTAL",
+    main_catalog_subtitle: "Antoine LCD catalog",
+    youtube_channel_title: "YOUTUBE CHANNEL @ANTOINELCD",
+    youtube_channel_cta: "VIEW CHANNEL",
+    catalog_previous: "Previous page",
+    catalog_next: "Next page",
+    catalog_play: "PLAY",
+    tickets: "TICKETS",
+    ticket_placeholder: "Ticketing to be added",
+    theme_light_aria: "Enable light mode",
+    theme_dark_aria: "Enable dark mode",
+    lang_fr_aria: "Switch to French",
+    lang_en_aria: "Switch to English",
+    theme_light: "LIGHT",
+    theme_dark: "DARK",
+    alias: "Alias",
+    style: "Style",
+    scene: "Scene",
+    audience: "Audience",
+    catalog: "CATALOG",
+    track_year: "Year",
+  },
+};
+
 const THEME_KEY = "wankid-theme";
+
+const catalogPageVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? 48 : -48,
+    opacity: 0,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction: number) => ({
+    x: direction > 0 ? -48 : 48,
+    opacity: 0,
+  }),
+};
 
 type Theme = "light" | "dark";
 
@@ -111,6 +279,31 @@ function getInitialTheme(): Theme {
 function Index() {
   const [theme, setTheme] = useState<Theme>(() => getInitialTheme());
   const [copied, setCopied] = useState(false);
+  const [catalogPage, setCatalogPage] = useState(0);
+  const [catalogDirection, setCatalogDirection] = useState(1);
+  const [lang, setLang] = useState<"fr" | "en">(() => {
+    if (typeof window === "undefined") return "en";
+    return navigator.language && navigator.language.startsWith("fr") ? "fr" : "en";
+  });
+
+  const t = (key: string) => translations[lang]?.[key] ?? key;
+
+  const tracksPerPage = 4;
+  const catalogPageCount = Math.ceil(catalogTracks.length / tracksPerPage);
+  const visibleCatalogTracks = catalogTracks.slice(
+    catalogPage * tracksPerPage,
+    catalogPage * tracksPerPage + tracksPerPage,
+  );
+
+  const paginateCatalog = (nextDirection: 1 | -1) => {
+    setCatalogDirection(nextDirection);
+    setCatalogPage((prev) => {
+      const nextPage = prev + nextDirection;
+      if (nextPage < 0) return catalogPageCount - 1;
+      if (nextPage >= catalogPageCount) return 0;
+      return nextPage;
+    });
+  };
 
   const handleCopyEmail = async () => {
     try {
@@ -128,7 +321,7 @@ function Index() {
   }, [theme]);
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" style={contentBackgroundStyle}>
       <main className="app-main is-visible">
         <motion.div
           initial={{ opacity: 0 }}
@@ -139,53 +332,109 @@ function Index() {
           <Header
             theme={theme}
             onToggleTheme={() => setTheme((prev) => (prev === "light" ? "dark" : "light"))}
+            lang={lang}
+            onToggleLang={() => setLang((prev) => (prev === "fr" ? "en" : "fr"))}
           />
           <section className="wankid-story-strip">
-            <p>
-              WANKID (ex Antoine LCD) est un DJ et producteur a l'univers House, Disco-House et
-              Electro. Il livre des sets club energiques et y presente ses productions exclusives.
-            </p>
+            <p>{translations[lang].bio}</p>
             <div className="wankid-facts-grid">
               {artistFacts.map((fact) => (
-                <div key={fact.label} className="wankid-fact-item">
-                  <span>{fact.label}</span>
-                  <strong>{fact.value}</strong>
+                <div key={fact.key} className="wankid-fact-item">
+                  <span>{translations[lang][fact.key]}</span>
+                  <strong>{typeof fact.value === "string" ? fact.value : fact.value[lang]}</strong>
                 </div>
               ))}
             </div>
           </section>
           <section className="wankid-links-section">
-            <div className="wankid-section-head">LIENS</div>
+            <div className="wankid-section-head">{translations[lang].links}</div>
             <SocialLinks />
           </section>
           <section className="wankid-audio-section">
-            <div className="wankid-section-head">DERNIERS SONS</div>
-            <AudioSection />
+            <div className="wankid-section-head">{translations[lang].latest_tracks}</div>
+            <AudioSection lang={lang} />
           </section>
-          <section className="wankid-gallery-section">
-            <div className="wankid-section-head">SETS ET SOIREES</div>
-            <Gallery photos={galleryPhotos} />
+          <section className="wankid-catalog-section">
+            <div className="catalog-topbar">
+              <div className="wankid-section-head">{translations[lang].catalog}</div>
+              <div className="catalog-nav">
+                <button
+                  type="button"
+                  className="catalog-arrow"
+                  onClick={() => paginateCatalog(-1)}
+                  aria-label={translations[lang].catalog_previous}
+                >
+                  <CaretLeft size={18} weight="bold" />
+                </button>
+                <span className="catalog-page-count">
+                  {catalogPage + 1} / {catalogPageCount}
+                </span>
+                <button
+                  type="button"
+                  className="catalog-arrow"
+                  onClick={() => paginateCatalog(1)}
+                  aria-label={translations[lang].catalog_next}
+                >
+                  <CaretRight size={18} weight="bold" />
+                </button>
+              </div>
+            </div>
+            <div className="catalog-carousel">
+              <AnimatePresence mode="wait" initial={false} custom={catalogDirection}>
+                <motion.div
+                  key={catalogPage}
+                  className="catalog-grid catalog-grid--carousel"
+                  custom={catalogDirection}
+                  variants={catalogPageVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  {visibleCatalogTracks.map((track) => (
+                    <a
+                      key={track.id}
+                      className="catalog-card"
+                      href={track.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={`${track.title} ${track.artist} ${track.year}`}
+                    >
+                      <div className="catalog-art">
+                        <span className="catalog-art-label">SC</span>
+                      </div>
+                      <div className="catalog-meta">
+                        <h4>{track.title}</h4>
+                        <p>{track.artist}</p>
+                        <span className="catalog-year">{track.year}</span>
+                      </div>
+                      <span className="catalog-play">{translations[lang].catalog_play}</span>
+                    </a>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </section>
           <section className="wankid-video-section">
-            <div className="wankid-section-head">VIDEOS</div>
-            <VideoSection />
+            <div className="wankid-section-head">{translations[lang].videos}</div>
+            <VideoSection lang={lang} />
           </section>
           <section className="wankid-dates-section">
-            <div className="wankid-section-head">PROCHAINES DATES</div>
-            <DatesSection />
+            <div className="wankid-section-head">{translations[lang].upcoming_dates}</div>
+            <DatesSection lang={lang} />
           </section>
           <section className="wankid-pass-section">
-            <div className="wankid-section-head">PRESS ACCESS</div>
+            <div className="wankid-section-head">{translations[lang].press_access}</div>
             <VipPass theme={theme} />
           </section>
           <section className="wankid-booking-section">
-            <div className="wankid-section-head">BOOKING / CONTACT</div>
+            <div className="wankid-section-head">{translations[lang].booking_contact}</div>
             <div className="booking-mail-row">
               <button
                 type="button"
                 className="booking-copy"
                 onClick={handleCopyEmail}
-                aria-label="Copier l'email dans le presse-papiers"
+                aria-label={translations[lang].copy_aria}
               >
                 <span className="booking-email-text">{bookingEmail}</span>
                 <span className="booking-copy-icon">{copied ? "✓" : <CopySimple size={14} />}</span>
@@ -194,7 +443,7 @@ function Index() {
                 className="booking-mailto"
                 href={`mailto:${bookingEmail}`}
                 onClick={(e) => e.stopPropagation()}
-                aria-label="Ouvrir le client mail"
+                aria-label={translations[lang].open_mail_aria}
               >
                 <EnvelopeSimple size={16} />
               </a>
@@ -202,7 +451,7 @@ function Index() {
           </section>
           {copied && (
             <div className="booking-toast" role="status" aria-live="polite">
-              Email copié dans le presse-papiers
+              {translations[lang].copied_toast}
             </div>
           )}
         </motion.div>
@@ -211,7 +460,17 @@ function Index() {
   );
 }
 
-function Header({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () => void }) {
+function Header({
+  theme,
+  onToggleTheme,
+  lang,
+  onToggleLang,
+}: {
+  theme: Theme;
+  onToggleTheme: () => void;
+  lang: "fr" | "en";
+  onToggleLang: () => void;
+}) {
   return (
     <motion.header
       className="wankid-header"
@@ -220,61 +479,53 @@ function Header({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () => v
       transition={{ duration: 0.8 }}
     >
       <div className="wankid-header-content">
-        <button
-          type="button"
-          className="theme-toggle"
-          onClick={onToggleTheme}
-          aria-label={theme === "light" ? "Activer le mode sombre" : "Activer le mode clair"}
-        >
-          {theme === "light" ? <Moon size={18} weight="bold" /> : <Sun size={18} weight="bold" />}
-          <span>{theme === "light" ? "SOMBRE" : "CLAIR"}</span>
-        </button>
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+          <button
+            type="button"
+            className="theme-toggle"
+            onClick={onToggleTheme}
+            aria-label={
+              theme === "light"
+                ? translations[lang].theme_dark_aria
+                : translations[lang].theme_light_aria
+            }
+          >
+            {theme === "light" ? <Moon size={18} weight="bold" /> : <Sun size={18} weight="bold" />}
+            <span>
+              {theme === "light" ? translations[lang].theme_dark : translations[lang].theme_light}
+            </span>
+          </button>
+          <button
+            type="button"
+            className="lang-toggle"
+            onClick={onToggleLang}
+            aria-label={
+              lang === "fr" ? translations[lang].lang_en_aria : translations[lang].lang_fr_aria
+            }
+          >
+            <span>{lang === "fr" ? "FR" : "EN"}</span>
+          </button>
+        </div>
         <img src={heroPhoto} alt="WANKID en profil" className="wankid-hero-image" />
         <h1 className="wankid-title">WANKID</h1>
-        <p className="wankid-subtitle">DJ / PRODUCTEUR / LIVE SETS</p>
+        <p className="wankid-subtitle">{translations[lang].subtitle}</p>
       </div>
     </motion.header>
   );
 }
 
-function Gallery({ photos }: { photos: string[] }) {
-  return (
-    <motion.section
-      className="wankid-gallery"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.8, delay: 0.2 }}
-    >
-      <div className="gallery-grid">
-        {photos.map((photo, idx) => (
-          <motion.div
-            key={idx}
-            className="gallery-item"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.1 + idx * 0.1 }}
-            whileHover={{ scale: 1.02 }}
-          >
-            <img src={photo} alt={`WANKID ${idx + 1}`} loading="lazy" />
-          </motion.div>
-        ))}
-      </div>
-    </motion.section>
-  );
-}
-
-function AudioSection() {
+function AudioSection({ lang }: { lang: "fr" | "en" }) {
   return (
     <div className="audio-grid">
       {latestReleases.map((release) => (
-        <article key={release.title} className="audio-card">
+        <article key={release.titleKey} className="audio-card">
           <div className="audio-meta">
-            <h3>{release.title}</h3>
-            <span>{release.format}</span>
+            <h3>{translations[lang][release.titleKey]}</h3>
+            <span>{translations[lang][release.formatKey]}</span>
           </div>
           <iframe
             className="audio-player"
-            title={release.title}
+            title={translations[lang][release.titleKey]}
             src={release.soundcloudEmbedUrl}
             allow="autoplay"
             loading="lazy"
@@ -285,44 +536,23 @@ function AudioSection() {
   );
 }
 
-function VideoSection() {
+function VideoSection({ lang }: { lang: "fr" | "en" }) {
   return (
     <div className="video-grid">
       {latestVideos.map((video) => (
-        <article key={video.title} className="video-card">
+        <article key={video.titleKey} className="video-card">
           <div className="video-cta-frame">
             {video.url ? (
               <a href={video.url} target="_blank" rel="noreferrer" className="video-cta-link">
-                {video.cta}
+                {translations[lang][video.ctaKey]}
               </a>
             ) : (
-              <span className="video-cta-placeholder">{video.cta}</span>
+              <span className="video-cta-placeholder">{translations[lang][video.ctaKey]}</span>
             )}
           </div>
           <div className="video-meta">
-            <h3>{video.title}</h3>
+            <h3>{translations[lang][video.titleKey]}</h3>
             <span>{video.source}</span>
-          </div>
-        </article>
-      ))}
-
-      {uploadedVideos.map((video) => (
-        <article key={video.title} className="video-card">
-          <div className="video-frame">
-            {video.src ? (
-              <video controls preload="metadata" poster={video.poster}>
-                <source src={video.src} type="video/mp4" />
-              </video>
-            ) : (
-              <div className="video-placeholder">
-                <span>Upload MP4</span>
-                <p>Ajoute l'URL dans uploadedVideos pour afficher la video.</p>
-              </div>
-            )}
-          </div>
-          <div className="video-meta">
-            <h3>{video.title}</h3>
-            <span>Upload</span>
           </div>
         </article>
       ))}
@@ -330,7 +560,7 @@ function VideoSection() {
   );
 }
 
-function DatesSection() {
+function DatesSection({ lang }: { lang: "fr" | "en" }) {
   return (
     <div className="dates-list">
       {upcomingDates.map((date) => (
@@ -348,10 +578,10 @@ function DatesSection() {
           </div>
           {date.ticketUrl ? (
             <a className="date-ticket" href={date.ticketUrl} target="_blank" rel="noreferrer">
-              Tickets
+              {translations[lang].tickets}
             </a>
           ) : (
-            <span className="date-ticket is-disabled">Billetterie a renseigner</span>
+            <span className="date-ticket is-disabled">{translations[lang].ticket_placeholder}</span>
           )}
         </article>
       ))}
