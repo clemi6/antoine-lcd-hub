@@ -343,6 +343,16 @@ export function VipPass({ theme = "light" }: VipPassProps) {
       const simulatedMouseY = deltaY / maxTilt;
       const simulatedMouseX = deltaX / maxTilt;
 
+      // If both deltas are back to near-zero, return to center
+      if (Math.abs(deltaX) < 2 && Math.abs(deltaY) < 2) {
+        if (mobileCenterLockRef.current) {
+          settleMobilePass();
+          mobileStableReadingsRef.current = 0;
+          mobileCenterLockRef.current = false;
+        }
+        return;
+      }
+
       // Consider non-tilt only on the lateral axis: if there's no left/right tilt,
       // keep lateral locked to center while still allowing a small forward/back tilt.
       const isLaterallyNearCenter = Math.abs(deltaX) <= MOBILE_CENTER_DEADZONE;
