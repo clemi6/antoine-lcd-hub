@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components */
+
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 
