@@ -23,8 +23,10 @@ const POINTER_SWING = 12;
 const POINTER_LIGHT_MULTIPLIER = 6;
 const MOBILE_TILT = 56;
 const MOBILE_SWING = 22;
-const MOBILE_CENTER_DEADZONE = 10;
-const MOBILE_CENTER_STABLE_READINGS = 3;
+// Wider deadzone: small device movements won't trigger lateral unlocking
+const MOBILE_CENTER_DEADZONE = 22;
+// Require more stable readings before considering the device 'out of jitter'
+const MOBILE_CENTER_STABLE_READINGS = 4;
 const MOBILE_CENTER_TILT = 1.8;
 const MOBILE_CENTER_SWING = 5;
 const MOBILE_NONLATERAL_TILT = 14;
