@@ -1,5 +1,5 @@
-import { useRef, useState, useEffect, useCallback } from "react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { useRef, useState, useEffect, useCallback, useLayoutEffect } from "react";
+import gsap from "gsap";
 import { DownloadSimple } from "@phosphor-icons/react";
 import "./antoine.css";
 
@@ -17,25 +17,33 @@ type ScreenWithOrientation = Screen & {
   };
 };
 
+const CARD_REST_SHADOW = "0px 20px 40px rgba(0,0,0,0.6)";
+const POINTER_TILT = 35;
+const POINTER_SWING = 12;
+const POINTER_LIGHT_MULTIPLIER = 6;
+const RELEASE_OVERSHOOT_MAX = 6;
+const RELEASE_OVERSHOOT_FACTOR = 0.28;
+const RELEASE_OVERSHOOT_FALLBACK = 4.2;
+const RELEASE_OUT_DURATION = 0.2;
+const RELEASE_RETURN_DURATION = 0.88;
+const BAR_WIDTHS = [
+  4, 1, 3, 2, 4, 2, 4, 1, 4, 3, 2, 4, 1, 4, 4, 2, 3, 1, 4, 4, 2, 4, 1, 3, 4, 2, 4, 1, 4, 3, 2, 4,
+];
+const SPACE_WIDTHS = [
+  2, 3, 2, 3, 2, 2, 3, 2, 2, 3, 2, 3, 2, 2, 3, 2, 3, 2, 2, 3, 2, 3, 2, 3, 2, 2, 3, 2, 3, 2, 3, 2,
+];
+
 export function VipPass({ theme = "light" }: VipPassProps) {
   const accent = theme === "dark" ? "#63dbc4" : "#c7a575";
   const ribbonShadow = theme === "dark" ? `${accent}52` : `${accent}40`;
-  const cardShadow =
-    theme === "dark" ? "0 18px 36px rgba(0,0,0,0.62)" : "0 18px 36px rgba(60,43,24,0.28)";
   const lightGradient =
     theme === "dark"
       ? "linear-gradient(135deg, transparent 40%, rgba(99,219,196,0.22) 50%, transparent 60%)"
       : "linear-gradient(135deg, transparent 40%, rgba(199,165,117,0.22) 50%, transparent 60%)";
 
-  const ref = useRef<HTMLAnchorElement>(null);
-
-  const rotX = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
-  const rotY = useSpring(useMotionValue(0), { stiffness: 80, damping: 15, mass: 1 });
-  const swing = useSpring(useMotionValue(0), { stiffness: 45, damping: 6, mass: 1.5 });
-
-  const shadow = useTransform(rotY, (v) => `${v / 2}px ${20 + Math.abs(v)}px 40px rgba(0,0,0,0.6)`);
-  const sheenX = useTransform(rotY, (v) => -v * 6);
-  const sheenY = useTransform(rotX, (v) => -v * 6);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLAnchorElement>(null);
+  const cardLightRef = useRef<HTMLDivElement>(null);
 
   const [hover, setHover] = useState(false);
   const [isReceivingData, setIsReceivingData] = useState(false);
@@ -51,23 +59,152 @@ export function VipPass({ theme = "light" }: VipPassProps) {
     y: null,
   });
 
+  const animatePass = useCallback((nextRotX: number, nextRotY: number, nextSwing: number) => {
+    const card = cardRef.current;
+    const stage = stageRef.current;
+    const light = cardLightRef.current;
+
+    if (stage) {
+      gsap.to(stage, {
+        rotate: nextSwing,
+        duration: 0.45,
+        ease: "power3.out",
+        overwrite: true,
+      });
+    }
+
+    if (card) {
+      gsap.to(card, {
+        rotateX: nextRotX,
+        rotateY: nextRotY,
+        boxShadow: `${nextRotY / 2}px ${20 + Math.abs(nextRotY)}px 40px rgba(0,0,0,0.6)`,
+        duration: 0.35,
+        ease: "power3.out",
+        overwrite: true,
+      });
+    }
+
+    if (light) {
+      gsap.to(light, {
+        x: -nextRotY * 6,
+        y: -nextRotX * 6,
+        scale: 2,
+        duration: 0.35,
+        ease: "power3.out",
+        overwrite: true,
+      });
+    }
+  }, []);
+
+  const settlePass = useCallback(() => {
+    const card = cardRef.current;
+    const stage = stageRef.current;
+    const light = cardLightRef.current;
+
+    if (card) {
+      gsap.to(card, {
+        rotateX: 0,
+        rotateY: 0,
+        scale: 1,
+        boxShadow: CARD_REST_SHADOW,
+        duration: 0.42,
+        ease: "power3.out",
+        overwrite: true,
+      });
+    }
+
+    if (light) {
+      gsap.to(light, {
+        x: 0,
+        y: 0,
+        scale: 2,
+        duration: 0.42,
+        ease: "power3.out",
+        overwrite: true,
+      });
+    }
+
+    if (stage) {
+      const currentSwing = Number(gsap.getProperty(stage, "rotate")) || 0;
+      const overshoot = gsap.utils.clamp(
+        -RELEASE_OVERSHOOT_MAX,
+        RELEASE_OVERSHOOT_MAX,
+        currentSwing * -RELEASE_OVERSHOOT_FACTOR || RELEASE_OVERSHOOT_FALLBACK,
+      );
+
+      gsap.killTweensOf(stage);
+      gsap
+        .timeline({ defaults: { overwrite: true } })
+        .to(stage, {
+          rotate: overshoot,
+          duration: RELEASE_OUT_DURATION,
+          ease: "power2.out",
+        })
+        .to(stage, {
+          rotate: 0,
+          duration: RELEASE_RETURN_DURATION,
+          ease: "elastic.out(1, 0.35)",
+        });
+    }
+  }, []);
+
+  useLayoutEffect(() => {
+    const stage = stageRef.current;
+    const card = cardRef.current;
+    const light = cardLightRef.current;
+
+    if (stage) {
+      gsap.set(stage, { rotate: 0, transformOrigin: "center top" });
+    }
+
+    if (card) {
+      gsap.set(card, {
+        rotateX: 0,
+        rotateY: 0,
+        scale: 1,
+        transformOrigin: "center top",
+        transformStyle: "preserve-3d",
+        boxShadow: CARD_REST_SHADOW,
+      });
+    }
+
+    if (light) {
+      gsap.set(light, { x: 0, y: 0, scale: 2 });
+    }
+
+    return () => {
+      gsap.killTweensOf([stage, card, light]);
+    };
+  }, []);
+
   const onMove = (e: React.PointerEvent) => {
-    const el = ref.current;
+    const el = cardRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width - 0.5;
     const y = (e.clientY - r.top) / r.height - 0.5;
 
-    rotY.set(-x * 35);
-    rotX.set(-y * 35);
-    swing.set(-x * 12);
+    animatePass(-y * POINTER_TILT, -x * POINTER_TILT, -x * POINTER_SWING);
   };
 
   const onLeave = () => {
-    rotX.set(0);
-    rotY.set(0);
-    swing.set(0);
+    settlePass();
     setHover(false);
+  };
+
+  const onPressStart = () => {
+    if (cardRef.current) {
+      gsap.to(cardRef.current, {
+        scale: 0.97,
+        duration: 0.12,
+        ease: "power2.out",
+        overwrite: true,
+      });
+    }
+  };
+
+  const onPressEnd = () => {
+    settlePass();
   };
 
   const handleOrientation = useCallback(
@@ -125,11 +262,13 @@ export function VipPass({ theme = "light" }: VipPassProps) {
       const simulatedMouseY = deltaY / maxTilt;
       const simulatedMouseX = deltaX / maxTilt;
 
-      rotY.set(-simulatedMouseX * 35);
-      rotX.set(-simulatedMouseY * 35);
-      swing.set(-simulatedMouseX * 12);
+      animatePass(
+        -simulatedMouseY * POINTER_TILT,
+        -simulatedMouseX * POINTER_TILT,
+        -simulatedMouseX * POINTER_SWING,
+      );
     },
-    [rotX, rotY, swing],
+    [animatePass],
   );
 
   useEffect(() => {
@@ -152,13 +291,11 @@ export function VipPass({ theme = "light" }: VipPassProps) {
 
   return (
     <div className="vip-pass-shell" style={{ perspective: 1000 }}>
-      <motion.div style={{ rotate: swing, originY: 0 }} className="vip-pass-stage">
+      <div ref={stageRef} className="vip-pass-stage">
         {/* LE TOUR DE COU EN V (FONDU ULTRA DOUX) */}
         <div
           className="vip-pass-lanyard"
           style={{
-            // MODIFICATION ICI : Il est solide de 0 à 10%, puis s'efface totalement à 80%.
-            // Les 20% restants de la div sont invisibles, garantissant qu'aucune ligne droite ne s'affiche.
             WebkitMaskImage:
               "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 80%)",
             maskImage:
@@ -194,21 +331,16 @@ export function VipPass({ theme = "light" }: VipPassProps) {
         </div>
 
         {/* LA CARTE VIP */}
-        <motion.a
-          ref={ref}
+        <a
+          ref={cardRef}
           href="#press-kit"
           download
           onPointerMove={onMove}
           onPointerEnter={() => setHover(true)}
           onPointerLeave={onLeave}
-          whileTap={{ scale: 0.97 }}
-          style={{
-            rotateX: rotX,
-            rotateY: rotY,
-            originY: 0,
-            transformStyle: "preserve-3d",
-            boxShadow: shadow,
-          }}
+          onPointerDown={onPressStart}
+          onPointerUp={onPressEnd}
+          onPointerCancel={onPressEnd}
           className="vip-pass-card"
         >
           {isReceivingData && <div className="vip-pass-card-led" />}
@@ -233,16 +365,8 @@ export function VipPass({ theme = "light" }: VipPassProps) {
 
             <div className="vip-pass-barcode">
               {Array.from({ length: 32 }).map((_, i) => {
-                const barWidths = [
-                  4, 1, 3, 2, 4, 2, 4, 1, 4, 3, 2, 4, 1, 4, 4, 2, 3, 1, 4, 4, 2, 4, 1, 3, 4, 2, 4,
-                  1, 4, 3, 2, 4,
-                ];
-                const spaceWidths = [
-                  2, 3, 2, 3, 2, 2, 3, 2, 2, 3, 2, 3, 2, 2, 3, 2, 3, 2, 2, 3, 2, 3, 2, 3, 2, 2, 3,
-                  2, 3, 2, 3, 2,
-                ];
-                const barWidth = barWidths[i] ?? 2;
-                const spaceWidth = i === 31 ? 0 : (spaceWidths[i] ?? 1);
+                const barWidth = BAR_WIDTHS[i] ?? 2;
+                const spaceWidth = i === 31 ? 0 : (SPACE_WIDTHS[i] ?? 1);
                 return (
                   <div
                     key={i}
@@ -266,17 +390,13 @@ export function VipPass({ theme = "light" }: VipPassProps) {
             </div>
           </div>
 
-          <motion.div
+          <div
+            ref={cardLightRef}
             className="vip-pass-card-light"
-            style={{
-              x: sheenX,
-              y: sheenY,
-              scale: 2,
-              background: lightGradient,
-            }}
+            style={{ background: lightGradient }}
           />
-        </motion.a>
-      </motion.div>
+        </a>
+      </div>
     </div>
   );
 }
