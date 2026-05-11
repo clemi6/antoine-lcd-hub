@@ -1121,6 +1121,30 @@ body[data-theme="dark"] .gallery-item {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+/* On small viewports make each column wider so card text has more room.
+   Overflow / clipping is acceptable because carousel hides overflow. */
+@media (max-width: 420px) {
+  .catalog-grid--carousel {
+    grid-template-columns: repeat(2, 16rem);
+    justify-content: start;
+    gap: 0.6rem;
+  }
+
+  .catalog-card {
+    grid-template-columns: 5.2rem 1fr auto;
+    gap: 0.5rem;
+    padding: 0.45rem;
+  }
+
+  .catalog-meta h4 {
+    font-size: 1.15rem;
+  }
+
+  .catalog-art {
+    border-radius: 0.5rem;
+  }
+}
+
 @media (max-width: 420px) {
   .catalog-card {
     grid-template-columns: 4.6rem minmax(0, 1fr) auto;
