@@ -176,7 +176,7 @@ body[data-theme="dark"] .vip-pass-card {
 
 .vip-pass-card-light {
   position: absolute;
-  inset: 0;
+  inset: -15px;
   pointer-events: none;
   opacity: 0.3;
   mix-blend-mode: screen;
