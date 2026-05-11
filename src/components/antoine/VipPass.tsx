@@ -21,6 +21,12 @@ const CARD_REST_SHADOW = "0px 20px 40px rgba(0,0,0,0.6)";
 const POINTER_TILT = 35;
 const POINTER_SWING = 12;
 const POINTER_LIGHT_MULTIPLIER = 6;
+const MOBILE_TILT = 48;
+const MOBILE_SWING = 18;
+const MOBILE_CENTER_DEADZONE = 4;
+const MOBILE_CENTER_STABLE_READINGS = 3;
+const MOBILE_CENTER_TILT = 1.8;
+const MOBILE_CENTER_SWING = 5;
 const RELEASE_OVERSHOOT_MAX = 6;
 const RELEASE_OVERSHOOT_FACTOR = 0.28;
 const RELEASE_OVERSHOOT_FALLBACK = 4.2;
@@ -47,6 +53,8 @@ export function VipPass({ theme = "light" }: VipPassProps) {
 
   const [hover, setHover] = useState(false);
   const [isReceivingData, setIsReceivingData] = useState(false);
+  const mobileStableReadingsRef = useRef(0);
+  const mobileCenterLockRef = useRef(false);
 
   const downloadColor = hover
     ? accent
@@ -86,8 +94,8 @@ export function VipPass({ theme = "light" }: VipPassProps) {
 
     if (light) {
       gsap.to(light, {
-        x: -nextRotY * 6,
-        y: -nextRotX * 6,
+          x: -nextRotY * POINTER_LIGHT_MULTIPLIER,
+          y: -nextRotX * POINTER_LIGHT_MULTIPLIER,
         scale: 2,
         duration: 0.35,
         ease: "power3.out",
@@ -145,6 +153,72 @@ export function VipPass({ theme = "light" }: VipPassProps) {
           duration: RELEASE_RETURN_DURATION,
           ease: "elastic.out(1, 0.35)",
         });
+    }
+  }, []);
+
+  const settleMobilePass = useCallback(() => {
+    const card = cardRef.current;
+    const stage = stageRef.current;
+    const light = cardLightRef.current;
+
+    mobileCenterLockRef.current = true;
+
+    if (card) {
+      gsap
+        .timeline({ defaults: { overwrite: true } })
+        .to(card, {
+          rotateX: MOBILE_CENTER_TILT,
+          rotateY: 0,
+          scale: 1,
+          boxShadow: CARD_REST_SHADOW,
+          duration: 0.14,
+          ease: "power2.out",
+        })
+        .to(card, {
+          rotateX: 0,
+          rotateY: 0,
+          duration: 0.32,
+          ease: "power3.out",
+        });
+    }
+
+    if (light) {
+      gsap.to(light, {
+        x: 0,
+        y: 0,
+        scale: 2,
+        duration: 0.36,
+        ease: "power3.out",
+        overwrite: true,
+      });
+    }
+
+    if (stage) {
+      const currentSwing = Number(gsap.getProperty(stage, "rotate")) || 0;
+      const overshoot = gsap.utils.clamp(
+        -MOBILE_CENTER_SWING,
+        MOBILE_CENTER_SWING,
+        currentSwing * -0.22 || MOBILE_CENTER_SWING,
+      );
+
+      gsap.killTweensOf(stage);
+      gsap
+        .timeline({ defaults: { overwrite: true } })
+        .to(stage, {
+          rotate: overshoot,
+          duration: 0.14,
+          ease: "power2.out",
+        })
+        .to(stage, {
+          rotate: 0,
+          duration: 0.72,
+          ease: "elastic.out(1, 0.42)",
+          onComplete: () => {
+            mobileCenterLockRef.current = false;
+          },
+        });
+    } else {
+      mobileCenterLockRef.current = false;
     }
   }, []);
 
@@ -259,16 +333,31 @@ export function VipPass({ theme = "light" }: VipPassProps) {
       deltaY = Math.max(-maxTilt, Math.min(maxTilt, deltaY));
       deltaX = Math.max(-maxTilt, Math.min(maxTilt, deltaX));
 
+      const isNearCenter = Math.abs(deltaX) <= MOBILE_CENTER_DEADZONE && Math.abs(deltaY) <= MOBILE_CENTER_DEADZONE;
+
+      if (isNearCenter) {
+        mobileStableReadingsRef.current += 1;
+        if (mobileStableReadingsRef.current >= MOBILE_CENTER_STABLE_READINGS) {
+          if (!mobileCenterLockRef.current) {
+            settleMobilePass();
+          }
+          return;
+        }
+      } else {
+        mobileStableReadingsRef.current = 0;
+        mobileCenterLockRef.current = false;
+      }
+
       const simulatedMouseY = deltaY / maxTilt;
       const simulatedMouseX = deltaX / maxTilt;
 
       animatePass(
-        -simulatedMouseY * POINTER_TILT,
-        -simulatedMouseX * POINTER_TILT,
-        -simulatedMouseX * POINTER_SWING,
+        -simulatedMouseY * MOBILE_TILT,
+        -simulatedMouseX * MOBILE_TILT,
+        -simulatedMouseX * MOBILE_SWING,
       );
     },
-    [animatePass],
+    [animatePass, settleMobilePass],
   );
 
   useEffect(() => {
