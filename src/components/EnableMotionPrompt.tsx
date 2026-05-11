@@ -46,18 +46,12 @@ export default function EnableMotionPrompt() {
             className="motion-prompt-card"
           >
             {/* La croix pour fermer/refuser */}
-            <button
-              onClick={handleDecline}
-              className="motion-prompt-close"
-              aria-label="Close"
-            >
+            <button onClick={handleDecline} className="motion-prompt-close" aria-label="Close">
               <X size={20} weight="bold" />
             </button>
 
             {/* Si tu as accès à useTheme() ici, tu peux remplacer text-emerald-400 par style={{ color: accent }} */}
-            <div className="motion-prompt-label">
-              INTERACTIVE EXPERIENCE
-            </div>
+            <div className="motion-prompt-label">INTERACTIVE EXPERIENCE</div>
 
             <h2 className="motion-prompt-title">Device Motion</h2>
 
@@ -65,10 +59,7 @@ export default function EnableMotionPrompt() {
               Enable motion sensors to unlock the 3D interactive VIP pass experience on your device.
             </p>
 
-            <button
-              onClick={handleEnable}
-              className="motion-prompt-button"
-            >
+            <button onClick={handleEnable} className="motion-prompt-button">
               ENABLE MOTION
             </button>
           </motion.div>

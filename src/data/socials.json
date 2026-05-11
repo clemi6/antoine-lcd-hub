@@ -1,9 +1,17 @@
 [
   { "name": "SoundCloud", "url": "https://soundcloud.com/antoinelcd", "icon": "FaSoundcloud" },
   { "name": "YouTube", "url": "https://www.youtube.com/@antoinelcd", "icon": "FaYoutube" },
-  { "name": "Spotify", "url": "https://open.spotify.com/intl-fr/artist/7HxlSdKo3UYEflPa6BluSd", "icon": "FaSpotify" },
+  {
+    "name": "Spotify",
+    "url": "https://open.spotify.com/intl-fr/artist/7HxlSdKo3UYEflPa6BluSd",
+    "icon": "FaSpotify"
+  },
   { "name": "Deezer", "url": "https://www.deezer.com/fr/artist/111844922", "icon": "FaDeezer" },
-  { "name": "Apple Music", "url": "https://music.apple.com/fr/artist/antoine-lcd/1538115744", "icon": "SiApplemusic" },
+  {
+    "name": "Apple Music",
+    "url": "https://music.apple.com/fr/artist/antoine-lcd/1538115744",
+    "icon": "SiApplemusic"
+  },
   { "name": "Instagram", "url": "https://www.instagram.com/antoine_lcd/", "icon": "FaInstagram" },
   { "name": "TikTok", "url": "https://www.tiktok.com/@antoinelcd_", "icon": "FaTiktok" },
   { "name": "Bandcamp", "url": "https://antoinelcd.bandcamp.com/", "icon": "FaBandcamp" }

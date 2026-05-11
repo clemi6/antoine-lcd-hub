@@ -3,7 +3,9 @@
   min-height: 100vh;
   width: 100%;
   background: radial-gradient(ellipse at top, #fbf8f2 0%, #f2ebdf 58%, #ebe1d2 100%);
-  transition: color 700ms ease, background 700ms ease;
+  transition:
+    color 700ms ease,
+    background 700ms ease;
 }
 
 body[data-theme="dark"] .app-shell {
@@ -216,7 +218,11 @@ body[data-theme="dark"] .app-shell {
   gap: 0.5rem;
   border-radius: 0.75rem;
   text-decoration: none;
-  transition: transform 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease;
 }
 
 .button-base:active {
@@ -465,7 +471,10 @@ body[data-theme="dark"] .app-shell {
   font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
-  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease;
 }
 
 .route-error-button,
@@ -563,7 +572,10 @@ body[data-theme="dark"] .app-shell {
   font-size: 10px;
   letter-spacing: 0.2em;
   cursor: pointer;
-  transition: background-color 220ms ease, color 220ms ease, border-color 220ms ease;
+  transition:
+    background-color 220ms ease,
+    color 220ms ease,
+    border-color 220ms ease;
 }
 
 .theme-toggle:hover {

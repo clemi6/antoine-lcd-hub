@@ -1,7 +1,8 @@
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 
-const basepath = import.meta.env.BASE_URL === "/" ? "/" : import.meta.env.BASE_URL.replace(/\/$/, "");
+const basepath =
+  import.meta.env.BASE_URL === "/" ? "/" : import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   return (
@@ -25,13 +26,9 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
           </svg>
         </div>
         <h1 className="route-error-title">Something went wrong</h1>
-        <p className="route-error-text">
-          An unexpected error occurred. Please try again.
-        </p>
+        <p className="route-error-text">An unexpected error occurred. Please try again.</p>
         {import.meta.env.DEV && error.message && (
-          <pre className="route-error-pre">
-            {error.message}
-          </pre>
+          <pre className="route-error-pre">{error.message}</pre>
         )}
         <div className="route-error-actions">
           <button
@@ -43,10 +40,7 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
           >
             Try again
           </button>
-          <a
-            href="/"
-            className="route-error-link"
-          >
+          <a href="/" className="route-error-link">
             Go home
           </a>
         </div>

@@ -9,7 +9,7 @@ function globalHandler(e: DeviceOrientationEvent) {
 }
 
 export function hasPermissionAPI() {
-  const anyDO = (DeviceOrientationEvent as any);
+  const anyDO = DeviceOrientationEvent as any;
   return !!(anyDO && typeof anyDO.requestPermission === "function");
 }
 
@@ -34,7 +34,7 @@ export function removeOrientationListener(cb: OrientationCallback) {
 }
 
 export async function requestPermission(): Promise<boolean> {
-  const anyDO = (DeviceOrientationEvent as any);
+  const anyDO = DeviceOrientationEvent as any;
   try {
     if (anyDO && typeof anyDO.requestPermission === "function") {
       const res = await anyDO.requestPermission();

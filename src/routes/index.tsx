@@ -65,15 +65,9 @@ function Index() {
   );
 }
 
-function Header({
-  theme,
-  onToggleTheme,
-}: {
-  theme: Theme;
-  onToggleTheme: () => void;
-}) {
+function Header({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () => void }) {
   return (
-    <motion.header 
+    <motion.header
       className="wankid-header"
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -89,11 +83,7 @@ function Header({
           {theme === "light" ? <Moon size={18} weight="bold" /> : <Sun size={18} weight="bold" />}
           <span>{theme === "light" ? "SOMBRE" : "CLAIR"}</span>
         </button>
-        <img 
-          src={wankidPhoto1} 
-          alt="WANKID" 
-          className="wankid-hero-image"
-        />
+        <img src={wankidPhoto1} alt="WANKID" className="wankid-hero-image" />
         <h1 className="wankid-title">WANKID</h1>
       </div>
     </motion.header>
@@ -102,7 +92,7 @@ function Header({
 
 function Gallery() {
   return (
-    <motion.section 
+    <motion.section
       className="wankid-gallery"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -118,11 +108,7 @@ function Gallery() {
             transition={{ duration: 0.6, delay: 0.1 + idx * 0.1 }}
             whileHover={{ scale: 1.02 }}
           >
-            <img 
-              src={photo} 
-              alt={`WANKID ${idx + 1}`}
-              loading="lazy"
-            />
+            <img src={photo} alt={`WANKID ${idx + 1}`} loading="lazy" />
           </motion.div>
         ))}
       </div>

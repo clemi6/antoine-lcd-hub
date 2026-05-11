@@ -100,8 +100,8 @@ export function VipPass({ theme = "light" }: VipPassProps) {
 
     if (light) {
       gsap.to(light, {
-          x: -nextRotY * POINTER_LIGHT_MULTIPLIER,
-          y: -nextRotX * POINTER_LIGHT_MULTIPLIER,
+        x: -nextRotY * POINTER_LIGHT_MULTIPLIER,
+        y: -nextRotX * POINTER_LIGHT_MULTIPLIER,
         scale: 2,
         duration: 0.35,
         ease: "power3.out",
@@ -343,34 +343,21 @@ export function VipPass({ theme = "light" }: VipPassProps) {
       const simulatedMouseY = deltaY / maxTilt;
       const simulatedMouseX = deltaX / maxTilt;
 
-      // If both deltas are back to near-zero, return to center
-      if (Math.abs(deltaX) < 2 && Math.abs(deltaY) < 2) {
-        if (mobileCenterLockRef.current) {
-          settleMobilePass();
-          mobileStableReadingsRef.current = 0;
-          mobileCenterLockRef.current = false;
-        }
+      // Deadzone: if BOTH deltas are small, pass stays completely immobile
+      const inDeadzone =
+        Math.abs(deltaX) <= MOBILE_CENTER_DEADZONE && Math.abs(deltaY) <= MOBILE_CENTER_DEADZONE;
+
+      if (inDeadzone) {
+        mobileCenterLockRef.current = true;
+        // Completely frozen: no rotation, no swing
+        animatePass(0, 0, 0);
         return;
-      }
-
-      // Consider non-tilt only on the lateral axis: if there's no left/right tilt,
-      // keep lateral locked to center while still allowing a small forward/back tilt.
-      const isLaterallyNearCenter = Math.abs(deltaX) <= MOBILE_CENTER_DEADZONE;
-
-      if (isLaterallyNearCenter) {
-        mobileStableReadingsRef.current += 1;
-        if (mobileStableReadingsRef.current >= MOBILE_CENTER_STABLE_READINGS) {
-          // lock lateral axis and allow a subtle forward/back swing ONLY (no rotateX)
-          mobileCenterLockRef.current = true;
-          const limitedY = Math.max(-1, Math.min(1, simulatedMouseY));
-          // no rotateX, no rotateY; only stage swing based on Y
-          animatePass(0, 0, -limitedY * MOBILE_CENTER_SWING_AMP);
-          return;
-        }
       } else {
-        mobileStableReadingsRef.current = 0;
         mobileCenterLockRef.current = false;
       }
+
+      // If we just exited the deadzone and are now moving, reset stable counter
+      mobileStableReadingsRef.current = 0;
 
       // Cross-axis dampening: when the device is tilted strongly forward/back (Y),
       // reduce the lateral (X) response to avoid the card shooting left/right.
