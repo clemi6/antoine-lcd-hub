@@ -12,7 +12,13 @@ import {
 } from "@phosphor-icons/react";
 import { useEffect, useState, type CSSProperties } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { PlayerProvider, usePlayer } from "@/lib/player";
+import { StickyPlayerProvider } from "@/lib/sticky-player";
 import "./routes.css";
+import CatalogCarousel from "@/components/CatalogCarousel";
+import HorizontalCarousel from "@/components/HorizontalCarousel";
+import MediaGallery, { MediaThumbnail } from "@/components/MediaGallery";
+import VideoSection from "@/components/VideoSection";
 import wankidPhoto3 from "@/assets/ANTOINE_LCD_12-25-6.jpg";
 
 export const Route = createFileRoute("/")({
@@ -30,6 +36,7 @@ const artistFacts = [
   { key: "scene", value: { fr: "Sets club dynamiques", en: "Dynamic club sets" } },
   {
     key: "audience",
+
     value: { fr: "Près de 10 000 abonnés sur YouTube", en: "Nearly 10,000 YouTube subscribers" },
   },
 ] as const;
@@ -39,13 +46,13 @@ const latestReleases = [
     titleKey: "latest_releases_title",
     formatKey: "latest_releases_subtitle",
     soundcloudEmbedUrl:
-      "https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/antoinelcd/tracks&color=%23c7a575&auto_play=false&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=true&visual=false",
+      "https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/antoinelcd/tracks&color=%23c7a575&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false",
   },
   {
     titleKey: "main_catalog_title",
     formatKey: "main_catalog_subtitle",
     soundcloudEmbedUrl:
-      "https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/antoinelcd&color=%23c7a575&auto_play=false&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=true&visual=false",
+      "https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/antoinelcd&color=%23c7a575&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false",
   },
 ];
 
@@ -138,6 +145,7 @@ const latestVideos = [
   },
 ];
 
+
 const upcomingDates = [
   {
     day: "12",
@@ -206,6 +214,13 @@ const translations: Record<string, Record<string, string>> = {
     scene: "Scène",
     audience: "Audience",
     catalog: "CATALOGUE",
+    media_gallery: "MÉDIAS",
+    catalog_cta_title: "Découvre tous les autres sons",
+    catalog_cta_subtitle: "Écoute la discographie complète sur SoundCloud ou Spotify.",
+    listen_button: "Écouter",
+    add_to_calendar: "Ajouter au calendrier",
+    tickets_tba: "Billetterie à renseigner",
+    mailing_placeholder: "ton@email.com",
     track_year: "Année",
   },
   en: {
@@ -243,11 +258,107 @@ const translations: Record<string, Record<string, string>> = {
     scene: "Scene",
     audience: "Audience",
     catalog: "CATALOG",
+    media_gallery: "MEDIA",
+    catalog_cta_title: "Discover the rest of the tracks",
+    catalog_cta_subtitle: "Listen to the full discography on SoundCloud or Spotify.",
+    listen_button: "Listen",
+    add_to_calendar: "Add to calendar",
+    tickets_tba: "Tickets TBA",
+    mailing_placeholder: "your@email.com",
     track_year: "Year",
   },
 };
 
+// --- MOCK DATA ---
+const mockCatalog = Array.from({ length: 8 }).map((_, i) => ({
+  id: `mock-cat-${i + 1}`,
+  title: `Mock Track ${i + 1}`,
+  artist: `Artist ${i + 1}`,
+  year: `202${(i % 10) + 1}`,
+  url: "https://soundcloud.com/antoinelcd",
+}));
+
+const mockVideos = Array.from({ length: 6 }).map((_, i) => ({
+  id: `mock-vid-${i + 1}`,
+  title: `Mock Video ${i + 1}`,
+  source: "YouTube",
+  url: i === 0 ? "https://www.youtube.com/@antoinelcd" : "",
+}));
+
+const mockDates = Array.from({ length: 8 }).map((_, i) => ({
+  day: String(((i + 3) % 28) + 1).padStart(2, "0"),
+  month: ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG"][i % 8],
+  year: `202${6 + (i % 2)}`,
+  city: `City ${i + 1}`,
+  venue: `Club ${i + 1}`,
+  organizer: `Organizer ${i + 1}`,
+  ticketUrl: i % 3 === 0 ? "" : "https://tickets.example.com",
+}));
+
+const mockMedia = Array.from({ length: 8 }).map((_, i) => ({
+  id: `mock-media-${i + 1}`,
+  type: i % 3 === 0 ? "video" : "image",
+  src: "",
+  poster: "",
+  alt: `Mock media ${i + 1}`,
+}));
+
+function VideoCard({ v }: { v: any }) {
+  return (
+    <div className="video-card" role="article">
+      <div className="video-thumb">
+        <div className="video-play">▶</div>
+      </div>
+      <div className="video-info">
+        <div className="video-title">{v.title}</div>
+      </div>
+    </div>
+  );
+}
+
+function DateCard({ d }: { d: any }) {
+  return (
+    <div className="date-card">
+      <div className="date-left">
+        <div className="date-day">{d.day}</div>
+        <div className="date-month">{d.month}</div>
+      </div>
+      <div className="date-right">
+        <div className="date-venue">{d.venue}</div>
+        <div className="date-city">{d.city}</div>
+      </div>
+    </div>
+  );
+}
+
+
 const THEME_KEY = "wankid-theme";
+
+function makeICS(event: { day: string; month: string; year: string; venue: string; city: string; organizer?: string }) {
+  const monthMap: Record<string, string> = {
+    JAN: "01",
+    FEB: "02",
+    MAR: "03",
+    APR: "04",
+    MAY: "05",
+    JUN: "06",
+    JUL: "07",
+    AUG: "08",
+    SEP: "09",
+    OCT: "10",
+    NOV: "11",
+    DEC: "12",
+  };
+  const mm = monthMap[event.month.toUpperCase()] ?? "01";
+  const dd = event.day.padStart(2, "0");
+  const yyyy = event.year;
+  const start = `${yyyy}${mm}${dd}T200000`;
+  const end = `${yyyy}${mm}${dd}T235900`;
+  const title = `${event.venue} — ${event.city}`;
+  const description = event.organizer ?? "";
+  const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//WANKID//EN\nBEGIN:VEVENT\nUID:${yyyy}${mm}${dd}-${title}\nDTSTAMP:${yyyy}${mm}${dd}T000000Z\nDTSTART:${start}\nDTEND:${end}\nSUMMARY:${title}\nDESCRIPTION:${description}\nLOCATION:${event.city}\nEND:VEVENT\nEND:VCALENDAR`;
+  return `data:text/calendar;charset=utf8,${encodeURIComponent(ics)}`;
+}
 
 const catalogPageVariants = {
   enter: (direction: number) => ({
@@ -280,36 +391,22 @@ function getInitialTheme(): Theme {
 function Index() {
   const [theme, setTheme] = useState<Theme>(() => getInitialTheme());
   const [copied, setCopied] = useState(false);
-  const [catalogPage, setCatalogPage] = useState(0);
-  const [catalogDirection, setCatalogDirection] = useState(1);
+  
   const isMobile = useIsMobile(768);
   const [lang, setLang] = useState<"fr" | "en">(() => {
     if (typeof window === "undefined") return "en";
+    const saved = window.localStorage.getItem("wankid-lang");
+    if (saved === "fr" || saved === "en") return saved;
     return navigator.language && navigator.language.startsWith("fr") ? "fr" : "en";
   });
 
   const t = (key: string) => translations[lang]?.[key] ?? key;
 
-  const tracksPerPage = isMobile ? 2 : 4;
-  const catalogPageCount = Math.ceil(catalogTracks.length / tracksPerPage);
-  const visibleCatalogTracks = catalogTracks.slice(
-    catalogPage * tracksPerPage,
-    catalogPage * tracksPerPage + tracksPerPage,
-  );
+  // Limit catalogue to top releases for performance and clarity
+  const CATALOG_MAX = isMobile ? 4 : 6;
+  const visibleCatalogTracks = catalogTracks.slice(0, CATALOG_MAX);
 
-  useEffect(() => {
-    setCatalogPage((prev) => Math.min(prev, catalogPageCount - 1));
-  }, [catalogPageCount]);
-
-  const paginateCatalog = (nextDirection: 1 | -1) => {
-    setCatalogDirection(nextDirection);
-    setCatalogPage((prev) => {
-      const nextPage = prev + nextDirection;
-      if (nextPage < 0) return catalogPageCount - 1;
-      if (nextPage >= catalogPageCount) return 0;
-      return nextPage;
-    });
-  };
+  // catalogue pagination removed in favor of a limited selection
 
   const handleCopyEmail = async () => {
     try {
@@ -321,6 +418,10 @@ function Index() {
     }
   };
 
+  // Player moved to PlayerProvider (see src/lib/player.tsx)
+  const [mailingEmail, setMailingEmail] = useState("");
+  const [mailingStatus, setMailingStatus] = useState<"idle" | "sent" | "error">("idle");
+
   useEffect(() => {
     document.body.dataset.theme = theme;
     window.localStorage.setItem(THEME_KEY, theme);
@@ -329,17 +430,26 @@ function Index() {
   return (
     <div className="app-shell" style={contentBackgroundStyle}>
       <main className="app-main is-visible">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          className="wankid-container"
-        >
+        <StickyPlayerProvider>
+          <PlayerProvider>
+            <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+            className="wankid-container"
+          >
           <Header
             theme={theme}
             onToggleTheme={() => setTheme((prev) => (prev === "light" ? "dark" : "light"))}
             lang={lang}
-            onToggleLang={() => setLang((prev) => (prev === "fr" ? "en" : "fr"))}
+            onToggleLang={() => {
+              const next = lang === "fr" ? "en" : "fr";
+              setLang(next);
+              try {
+                window.localStorage.setItem("wankid-lang", next);
+                window.dispatchEvent(new CustomEvent("wankid-lang-changed", { detail: next }));
+              } catch (e) {}
+            }}
           />
           <section className="wankid-story-strip">
             <p>{translations[lang].bio}</p>
@@ -361,70 +471,19 @@ function Index() {
             <AudioSection lang={lang} />
           </section>
           <section className="wankid-catalog-section">
-            <div className="catalog-topbar">
-              <div className="wankid-section-head">{translations[lang].catalog}</div>
-              <div className="catalog-nav">
-                <button
-                  type="button"
-                  className="catalog-arrow"
-                  onClick={() => paginateCatalog(-1)}
-                  aria-label={translations[lang].catalog_previous}
-                >
-                  <CaretLeft size={18} weight="bold" />
-                </button>
-                <span className="catalog-page-count">
-                  {catalogPage + 1} / {catalogPageCount}
-                </span>
-                <button
-                  type="button"
-                  className="catalog-arrow"
-                  onClick={() => paginateCatalog(1)}
-                  aria-label={translations[lang].catalog_next}
-                >
-                  <CaretRight size={18} weight="bold" />
-                </button>
-              </div>
-            </div>
-            <div className="catalog-carousel">
-              <AnimatePresence mode="wait" initial={false} custom={catalogDirection}>
-                <motion.div
-                  key={catalogPage}
-                  className="catalog-grid catalog-grid--carousel"
-                  custom={catalogDirection}
-                  variants={catalogPageVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  {visibleCatalogTracks.map((track) => (
-                    <a
-                      key={track.id}
-                      className="catalog-card"
-                      href={track.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={`${track.title} ${track.artist} ${track.year}`}
-                    >
-                      <div className="catalog-art">
-                        <span className="catalog-art-label">SC</span>
-                      </div>
-                      <div className="catalog-meta">
-                        <h4>{track.title}</h4>
-                        <p>{track.artist}</p>
-                        <span className="catalog-year">{track.year}</span>
-                      </div>
-                      <span className="catalog-play">{translations[lang].catalog_play}</span>
-                    </a>
-                  ))}
-                </motion.div>
-              </AnimatePresence>
-            </div>
+            <CatalogCarousel
+              tracks={visibleCatalogTracks}
+              title={t('catalog')}
+              playLabel={t('catalog_play')}
+              ctaTitle={t('catalog_cta_title')}
+              ctaSubtitle={t('catalog_cta_subtitle')}
+            />
           </section>
           <section className="wankid-video-section">
             <div className="wankid-section-head">{translations[lang].videos}</div>
-            <VideoSection lang={lang} />
+            <VideoSection />
           </section>
+          
           <section className="wankid-dates-section">
             <div className="wankid-section-head">{translations[lang].upcoming_dates}</div>
             <DatesSection lang={lang} />
@@ -432,6 +491,39 @@ function Index() {
           <section className="wankid-pass-section">
             <div className="wankid-section-head">{translations[lang].press_access}</div>
             <VipPass theme={theme} />
+          </section>
+          <section className="wankid-mailing-section">
+            <div className="wankid-section-head">Rejoins le WANKID Club</div>
+            <div className="mailing-card">
+              <p className="mailing-copy">Rejoins le WANKID Club pour des unreleased et des places gratuites</p>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  // fallback: open mail client to capture subscription if no backend
+                  if (!mailingEmail) return setMailingStatus("error");
+                  const mailto = `mailto:${bookingEmail}?subject=${encodeURIComponent(
+                    "WANKID Club subscription",
+                  )}&body=${encodeURIComponent("Email: " + mailingEmail)}&`;
+                  window.open(mailto, "_blank");
+                  setMailingStatus("sent");
+                }}
+              >
+                <div className="mailing-row">
+                  <input
+                    type="email"
+                    placeholder={t('mailing_placeholder')}
+                    value={mailingEmail}
+                    onChange={(ev) => setMailingEmail(ev.target.value)}
+                    className="mailing-input"
+                    required
+                  />
+                  <button type="submit" className="button-base button-accent">
+                    Rejoindre
+                  </button>
+                </div>
+                {mailingStatus === "sent" && <div className="mailing-toast">Merci ! Check ta boîte.</div>}
+              </form>
+            </div>
           </section>
           <section className="wankid-booking-section">
             <div className="wankid-section-head">{translations[lang].booking_contact}</div>
@@ -460,11 +552,16 @@ function Index() {
               {translations[lang].copied_toast}
             </div>
           )}
-        </motion.div>
+          {/* Player UI is provided by PlayerProvider (see src/lib/player.tsx) */}
+          </motion.div>
+          </PlayerProvider>
+        </StickyPlayerProvider>
       </main>
     </div>
   );
 }
+
+
 
 function Header({
   theme,
@@ -542,55 +639,12 @@ function AudioSection({ lang }: { lang: "fr" | "en" }) {
   );
 }
 
-function VideoSection({ lang }: { lang: "fr" | "en" }) {
-  return (
-    <div className="video-grid">
-      {latestVideos.map((video) => (
-        <article key={video.titleKey} className="video-card">
-          <div className="video-cta-frame">
-            {video.url ? (
-              <a href={video.url} target="_blank" rel="noreferrer" className="video-cta-link">
-                {translations[lang][video.ctaKey]}
-              </a>
-            ) : (
-              <span className="video-cta-placeholder">{translations[lang][video.ctaKey]}</span>
-            )}
-          </div>
-          <div className="video-meta">
-            <h3>{translations[lang][video.titleKey]}</h3>
-            <span>{video.source}</span>
-          </div>
-        </article>
-      ))}
-    </div>
-  );
-}
-
 function DatesSection({ lang }: { lang: "fr" | "en" }) {
   return (
-    <div className="dates-list">
-      {upcomingDates.map((date) => (
-        <article key={`${date.day}-${date.month}-${date.venue}`} className="date-card">
-          <div className="date-left">
-            <span className="date-day">{date.day}</span>
-            <span className="date-month">{date.month}</span>
-          </div>
-          <div className="date-center">
-            <h3>{date.venue}</h3>
-            <p>
-              {date.city} - {date.month} {date.year}
-            </p>
-            <p>{date.organizer}</p>
-          </div>
-          {date.ticketUrl ? (
-            <a className="date-ticket" href={date.ticketUrl} target="_blank" rel="noreferrer">
-              {translations[lang].tickets}
-            </a>
-          ) : (
-            <span className="date-ticket is-disabled">{translations[lang].ticket_placeholder}</span>
-          )}
-        </article>
+    <HorizontalCarousel rows={1} className="dates-horizontal">
+      {mockDates.map((d) => (
+        <DateCard key={`${d.day}-${d.month}-${d.venue}`} d={d} />
       ))}
-    </div>
+    </HorizontalCarousel>
   );
 }

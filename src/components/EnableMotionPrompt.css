@@ -1,7 +1,7 @@
 .motion-prompt-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: 100; /* keep below header controls which have higher z-index */
   display: flex;
   align-items: center;
   justify-content: center;

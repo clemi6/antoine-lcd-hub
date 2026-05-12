@@ -385,17 +385,48 @@ export function VipPass({ theme = "light" }: VipPassProps) {
   useEffect(() => {
     let mounted = true;
 
-    import("../../lib/orientation")
-      .then((mod) => {
-        if (!mounted) return;
-        mod.addOrientationListener(handleOrientation);
-      })
-      .catch(() => null);
+    const optedOut = (() => {
+      try {
+        return window.localStorage.getItem("wankid-motion-optout") === "1";
+      } catch (e) {
+        return false;
+      }
+    })();
+
+    if (optedOut) return () => {
+      /* no-op: user opted out */
+    };
+
+    const attach = async () => {
+      try {
+        const mod = await import("../../lib/orientation");
+        // only attach if platform doesn't require permission, or permission is already granted
+        if (!mod.hasPermissionAPI() || mod.isGranted()) {
+          if (!mounted) return;
+          mod.addOrientationListener(handleOrientation);
+        }
+      } catch (e) {}
+    };
+
+    attach();
+
+    const onGranted = () => {
+      import("../../lib/orientation").then((mod) => {
+        try {
+          mod.addOrientationListener(handleOrientation);
+        } catch (e) {}
+      });
+    };
+
+    window.addEventListener("wankid-motion-granted", onGranted);
 
     return () => {
       mounted = false;
+      window.removeEventListener("wankid-motion-granted", onGranted);
       import("../../lib/orientation").then((mod) => {
-        mod.removeOrientationListener(handleOrientation);
+        try {
+          mod.removeOrientationListener(handleOrientation);
+        } catch (e) {}
       });
     };
   }, [handleOrientation]);
