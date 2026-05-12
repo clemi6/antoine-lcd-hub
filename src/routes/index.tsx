@@ -368,6 +368,25 @@ function DateCard({ d, lang }: { d: any; lang: "fr" | "en" }) {
       >
         {translations[lang].add_to_calendar}
       </a>
+      {d.ticketUrl ? (
+        <a
+          href={d.ticketUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="button-base button-accent"
+          style={{ width: "100%", marginTop: "6px", fontSize: "0.85rem" }}
+        >
+          {translations[lang].tickets}
+        </a>
+      ) : (
+        <button
+          disabled
+          className="button-base button-outline"
+          style={{ width: "100%", marginTop: "6px", fontSize: "0.85rem", opacity: 0.5, cursor: "not-allowed" }}
+        >
+          {translations[lang].ticket_placeholder}
+        </button>
+      )}
     </div>
   );
 }
