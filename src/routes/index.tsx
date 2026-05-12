@@ -531,7 +531,7 @@ function Index() {
             <AudioSection lang={lang} />
           </section>
           <section className="wankid-catalog-section">
-            <div className="wankid-section-head">— {translations[lang].catalog} —</div>
+            <div className="wankid-section-head">{translations[lang].catalog}</div>
             <CatalogCarousel
               tracks={visibleCatalogTracks}
               title=""
