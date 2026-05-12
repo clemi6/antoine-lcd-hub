@@ -44,11 +44,12 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    const id = setInterval(() => {
+    if (!currentTrack) return;
+    const timeoutId = window.setTimeout(() => {
       attachWidget();
     }, 300);
-    return () => clearInterval(id);
-  }, []);
+    return () => window.clearTimeout(timeoutId);
+  }, [currentTrack]);
 
   const loadTrack = (track: Track) => {
     setCurrentTrack(track);
@@ -56,9 +57,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       track.url,
     )}&color=%23c7a575&auto_play=true&visual=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false`;
     if (scIframeRef.current) scIframeRef.current.src = src;
-    // try to play when widget is attached
     setTimeout(() => {
       try {
+        attachWidget();
         if (scWidgetRef.current) scWidgetRef.current.play();
       } catch (e) {
         // ignore
@@ -78,24 +79,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     <PlayerContext.Provider value={{ currentTrack, isPlaying, loadTrack, togglePlay }}>
       {children}
       {/* Hidden iframe for SC widget */}
-      <iframe ref={scIframeRef} title="sc-player" style={{ display: "none" }} />
-      {/* Sticky UI */}
-      {currentTrack && (
-        <div className="sticky-player" aria-live="polite">
-          <div className="sticky-player-left">
-            <strong className="sticky-track-title">{currentTrack.title}</strong>
-            <span className="sticky-track-artist">{currentTrack.artist}</span>
-          </div>
-          <div className="sticky-player-controls">
-            <button type="button" className="button-base" onClick={togglePlay} aria-label="Play/Pause">
-              {isPlaying ? "Pause" : "Play"}
-            </button>
-            <a className="button-base" href={currentTrack.url} target="_blank" rel="noreferrer">
-              Ouvrir
-            </a>
-          </div>
-        </div>
-      )}
+      <iframe ref={scIframeRef} title="sc-player" src="about:blank" style={{ display: "none" }} />
     </PlayerContext.Provider>
   );
 }

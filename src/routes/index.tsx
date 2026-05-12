@@ -534,6 +534,7 @@ function Index() {
             <div className="wankid-section-head">— {translations[lang].catalog} —</div>
             <CatalogCarousel
               tracks={visibleCatalogTracks}
+              title=""
               playLabel={t('catalog_play')}
               ctaTitle={t('catalog_cta_title')}
               ctaSubtitle={t('catalog_cta_subtitle')}
@@ -697,7 +698,7 @@ function AudioSection({ lang }: { lang: "fr" | "en" }) {
         <article key={release.titleKey} className="audio-card">
           <div className="audio-meta">
             <h3>{translations[lang][release.titleKey]}</h3>
-            <span>{translations[lang][release.formatKey]}</span>
+            {release.formatKey !== "main_catalog_subtitle" && <span>{translations[lang][release.formatKey]}</span>}
           </div>
           <iframe
             className="audio-player"
