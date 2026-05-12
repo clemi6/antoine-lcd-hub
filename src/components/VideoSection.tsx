@@ -86,14 +86,14 @@ function VideoNoImage() {
   );
 }
 
-function YouTubeChannelCard() {
+function YouTubeChannelCard({ channelUrl }: { channelUrl: string }) {
   return (
     <div className="video-channel-card" role="article">
       <div className="channel-content">
         <h3 className="channel-title">YOUTUBE CHANNEL</h3>
         <p className="channel-handle">@ANTOINELCD</p>
         <a
-          href="https://www.youtube.com/@antoinelcd"
+          href={channelUrl}
           target="_blank"
           rel="noreferrer"
           className="button-base button-accent"
@@ -158,7 +158,7 @@ export default function VideoSection({
   return (
     <>
       <HorizontalCarousel rows={2} className="videos-horizontal">
-        <YouTubeChannelCard />
+        <YouTubeChannelCard channelUrl={channelUrl} />
         {mockYouTubeVideos.map((video) => (
           <VideoThumbnail key={video.id} video={video} onClick={() => setSelectedVideo(video)} />
         ))}

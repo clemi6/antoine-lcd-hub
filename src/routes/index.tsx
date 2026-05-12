@@ -541,7 +541,7 @@ function Index() {
             />
           </section>
           <section className="wankid-video-section">
-            <div className="wankid-section-head">{lang === "fr" ? "— YOUTUBE & GALERIE —" : "— YOUTUBE & GALLERY —"}</div>
+            <div className="wankid-section-head">{lang === "fr" ? "YOUTUBE & GALERIE" : "YOUTUBE & GALLERY"}</div>
             <VideoSection />
           </section>
           
