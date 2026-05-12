@@ -531,16 +531,16 @@ function Index() {
             <AudioSection lang={lang} />
           </section>
           <section className="wankid-catalog-section">
+            <div className="wankid-section-head">— {translations[lang].catalog} —</div>
             <CatalogCarousel
               tracks={visibleCatalogTracks}
-              title={t('catalog')}
               playLabel={t('catalog_play')}
               ctaTitle={t('catalog_cta_title')}
               ctaSubtitle={t('catalog_cta_subtitle')}
             />
           </section>
           <section className="wankid-video-section">
-            <div className="wankid-section-head">{translations[lang].videos}</div>
+            <div className="wankid-section-head">{lang === "fr" ? "— YOUTUBE & GALERIE —" : "— YOUTUBE & GALLERY —"}</div>
             <VideoSection />
           </section>
           
@@ -666,7 +666,19 @@ function Header({
               lang === "fr" ? translations[lang].lang_en_aria : translations[lang].lang_fr_aria
             }
           >
-            <span className="lang-flag">{lang === "fr" ? "🇬🇧" : "🇫🇷"}</span>
+            {lang === "fr" ? (
+              <svg className="lang-flag" viewBox="0 0 3 2" xmlns="http://www.w3.org/2000/svg">
+                <rect width="1" height="2" fill="#002395"/>
+                <rect x="1" width="1" height="2" fill="white"/>
+                <rect x="2" width="1" height="2" fill="#ED2939"/>
+              </svg>
+            ) : (
+              <svg className="lang-flag" viewBox="0 0 3 2" xmlns="http://www.w3.org/2000/svg">
+                <rect width="3" height="2" fill="#012169"/>
+                <path d="M0,0 L3,2 M3,0 L0,2" stroke="white" strokeWidth="0.4"/>
+                <path d="M1.5,0 V2 M0,1 H3" stroke="#C8102E" strokeWidth="0.27"/>
+              </svg>
+            )}
             <span>{lang === "fr" ? "EN" : "FR"}</span>
           </button>
         </div>

@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import HorizontalCarousel from "./HorizontalCarousel";
+import img1 from "@/assets/ANTOINE_LCD_12-25-55.jpg";
+import img2 from "@/assets/ANTOINE_LCD_12-25-56.jpg";
+import img3 from "@/assets/ANTOINE_LCD_12-25-6.jpg";
 import "../routes/routes.css";
 
 type Video = {
@@ -7,6 +10,12 @@ type Video = {
   title: string;
   thumbnailUrl?: string | null;
   url: string;
+};
+
+type GalleryItem = {
+  id: string;
+  title: string;
+  imageUrl: string;
 };
 
 // Mock data - prepared for YouTube API integration
@@ -40,6 +49,24 @@ const mockYouTubeVideos: Video[] = [
     title: "Disco House Remix",
     thumbnailUrl: "",
     url: "https://www.youtube.com/embed/9bZkp7q19f0",
+  },
+];
+
+const galleryImages: GalleryItem[] = [
+  {
+    id: "gallery-1",
+    title: "Studio Session",
+    imageUrl: img1,
+  },
+  {
+    id: "gallery-2",
+    title: "Live Performance",
+    imageUrl: img2,
+  },
+  {
+    id: "gallery-3",
+    title: "Behind the Scenes",
+    imageUrl: img3,
   },
 ];
 
@@ -79,6 +106,22 @@ function YouTubeChannelCard() {
   );
 }
 
+function GalleryImage({ imageUrl, title, onClick }: { imageUrl: string; title: string; onClick: () => void }) {
+  return (
+    <div className="video-card-item" role="button" onClick={onClick} tabIndex={0}>
+      <div className="video-thumb-wrapper">
+        <img
+          src={imageUrl}
+          alt={title}
+          className="video-thumb-img"
+        />
+        <div className="video-play-icon">🖼</div>
+      </div>
+      <div className="video-card-title">{title}</div>
+    </div>
+  );
+}
+
 function VideoThumbnail({ video, onClick }: { video: Video; onClick: () => void }) {
   const [hasError, setHasError] = useState(false);
 
@@ -110,6 +153,7 @@ export default function VideoSection({
   channelUrl?: string;
 }) {
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   return (
     <>
@@ -117,6 +161,9 @@ export default function VideoSection({
         <YouTubeChannelCard />
         {mockYouTubeVideos.map((video) => (
           <VideoThumbnail key={video.id} video={video} onClick={() => setSelectedVideo(video)} />
+        ))}
+        {galleryImages.map((image) => (
+          <GalleryImage key={image.id} imageUrl={image.imageUrl} title={image.title} onClick={() => setSelectedImage(image.imageUrl)} />
         ))}
       </HorizontalCarousel>
 
@@ -145,6 +192,28 @@ export default function VideoSection({
                 allowFullScreen
                 title={selectedVideo.title}
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedImage && (
+        <div
+          className="video-lightbox-overlay"
+          onClick={() => setSelectedImage(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="video-lightbox-body" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="video-lightbox-close"
+              onClick={() => setSelectedImage(null)}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+            <div className="gallery-lightbox-container">
+              <img src={selectedImage} alt="Gallery" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
             </div>
           </div>
         </div>
