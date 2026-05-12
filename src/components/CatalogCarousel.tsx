@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { usePlayer } from "@/lib/player";
+import { useStickyPlayer } from "@/lib/sticky-player";
 import "../routes/routes.css";
 
 export default function CatalogCarousel({
@@ -17,12 +18,19 @@ export default function CatalogCarousel({
 }) {
   const trackRef = useRef<HTMLDivElement | null>(null);
   const player = usePlayer();
+  const stickyPlayer = useStickyPlayer();
 
   const scrollBy = (dir: number) => {
     const el = trackRef.current;
     if (!el) return;
     const amount = el.clientWidth * 0.85 * dir;
     el.scrollBy({ left: amount, behavior: "smooth" });
+  };
+
+  const handleTrackClick = (t: any) => {
+    player.loadTrack(t);
+    stickyPlayer.setCurrentTrack({ id: t.id, title: t.title, artist: t.artist });
+    stickyPlayer.setIsPlaying(true);
   };
 
   return (
@@ -37,7 +45,7 @@ export default function CatalogCarousel({
 
       <div className="catalog-tracks" ref={trackRef}>
         {tracks.map((t) => (
-          <div key={t.id} className="track-card" role="button" onClick={() => player.loadTrack(t)}>
+          <div key={t.id} className="track-card" role="button" onClick={() => handleTrackClick(t)}>
             <div className="track-cover">
               <div className="track-play-overlay">▶</div>
             </div>
@@ -48,7 +56,7 @@ export default function CatalogCarousel({
                 className="track-play-pill button-base button-outline"
                 onClick={(e) => {
                   e.stopPropagation();
-                  player.loadTrack(t);
+                  handleTrackClick(t);
                 }}
               >
                 {playLabel ?? "Écouter"}

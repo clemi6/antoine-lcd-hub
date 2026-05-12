@@ -220,6 +220,9 @@ const translations: Record<string, Record<string, string>> = {
     listen_button: "Écouter",
     add_to_calendar: "Ajouter au calendrier",
     tickets_tba: "Billetterie à renseigner",
+    mailing_title: "Rejoins le WANKID Club",
+    mailing_subtitle: "Reçois des unreleased et des places gratuites",
+    mailing_button: "Rejoindre",
     mailing_placeholder: "ton@email.com",
     track_year: "Année",
   },
@@ -264,6 +267,9 @@ const translations: Record<string, Record<string, string>> = {
     listen_button: "Listen",
     add_to_calendar: "Add to calendar",
     tickets_tba: "Tickets TBA",
+    mailing_title: "Join the WANKID Club",
+    mailing_subtitle: "Get exclusive unreleased tracks and free tickets",
+    mailing_button: "Join",
     mailing_placeholder: "your@email.com",
     track_year: "Year",
   },
@@ -316,17 +322,52 @@ function VideoCard({ v }: { v: any }) {
   );
 }
 
-function DateCard({ d }: { d: any }) {
+function DateCard({ d, lang }: { d: any; lang: "fr" | "en" }) {
+  const monthMap: Record<string, string> = {
+    JAN: "01",
+    FEB: "02",
+    MAR: "03",
+    APR: "04",
+    MAY: "05",
+    JUN: "06",
+    JUL: "07",
+    AUG: "08",
+    SEP: "09",
+    OCT: "10",
+    NOV: "11",
+    DEC: "12",
+  };
+  const mm = monthMap[d.month.toUpperCase()] ?? "01";
+  const dd = d.day.padStart(2, "0");
+  const yyyy = d.year;
+  const start = `${yyyy}${mm}${dd}T200000`;
+  const end = `${yyyy}${mm}${dd}T235900`;
+  const title = `${d.venue} — ${d.city}`;
+  const description = d.organizer ?? "";
+  const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//WANKID//EN\nBEGIN:VEVENT\nUID:${yyyy}${mm}${dd}-${title}\nDTSTAMP:${yyyy}${mm}${dd}T000000Z\nDTSTART:${start}\nDTEND:${end}\nSUMMARY:${title}\nDESCRIPTION:${description}\nLOCATION:${d.city}\nEND:VEVENT\nEND:VCALENDAR`;
+  const icsDataUrl = `data:text/calendar;charset=utf8,${encodeURIComponent(ics)}`;
+
   return (
     <div className="date-card">
-      <div className="date-left">
-        <div className="date-day">{d.day}</div>
-        <div className="date-month">{d.month}</div>
+      <div className="date-top">
+        <div className="date-box">
+          <div className="date-day">{d.day}</div>
+          <div className="date-month">{d.month}</div>
+        </div>
+        <div className="date-info">
+          <div className="date-venue">{d.venue}</div>
+          <div className="date-city">{d.city}</div>
+          <div className="date-time">20:00</div>
+        </div>
       </div>
-      <div className="date-right">
-        <div className="date-venue">{d.venue}</div>
-        <div className="date-city">{d.city}</div>
-      </div>
+      <a
+        href={icsDataUrl}
+        download={`${d.venue.replace(/\s+/g, "-") || "event"}.ics`}
+        className="button-base button-outline"
+        style={{ width: "100%", marginTop: "8px", fontSize: "0.85rem" }}
+      >
+        {translations[lang].add_to_calendar}
+      </a>
     </div>
   );
 }
@@ -493,9 +534,9 @@ function Index() {
             <VipPass theme={theme} />
           </section>
           <section className="wankid-mailing-section">
-            <div className="wankid-section-head">Rejoins le WANKID Club</div>
+            <div className="wankid-section-head">{t('mailing_title')}</div>
             <div className="mailing-card">
-              <p className="mailing-copy">Rejoins le WANKID Club pour des unreleased et des places gratuites</p>
+              <p className="mailing-copy">{t('mailing_subtitle')}</p>
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -518,7 +559,7 @@ function Index() {
                     required
                   />
                   <button type="submit" className="button-base button-accent">
-                    Rejoindre
+                    {t('mailing_button')}
                   </button>
                 </div>
                 {mailingStatus === "sent" && <div className="mailing-toast">Merci ! Check ta boîte.</div>}
@@ -606,7 +647,8 @@ function Header({
               lang === "fr" ? translations[lang].lang_en_aria : translations[lang].lang_fr_aria
             }
           >
-            <span>{lang === "fr" ? "FR" : "EN"}</span>
+            <span className="lang-flag">{lang === "fr" ? "🇬🇧" : "🇫🇷"}</span>
+            <span>{lang === "fr" ? "EN" : "FR"}</span>
           </button>
         </div>
         <img src={heroPhoto} alt="WANKID en profil" className="wankid-hero-image" />
@@ -641,9 +683,9 @@ function AudioSection({ lang }: { lang: "fr" | "en" }) {
 
 function DatesSection({ lang }: { lang: "fr" | "en" }) {
   return (
-    <HorizontalCarousel rows={1} className="dates-horizontal">
+    <HorizontalCarousel rows={2} className="dates-horizontal">
       {mockDates.map((d) => (
-        <DateCard key={`${d.day}-${d.month}-${d.venue}`} d={d} />
+        <DateCard key={`${d.day}-${d.month}-${d.venue}`} d={d} lang={lang} />
       ))}
     </HorizontalCarousel>
   );

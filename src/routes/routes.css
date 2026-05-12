@@ -1068,7 +1068,7 @@ body[data-theme="dark"] .theme-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
+  gap: 0.4rem;
   border: 1px solid rgba(53, 39, 22, 0.12);
   background: rgba(255, 255, 255, 0.18);
   color: #30261c;
@@ -1079,10 +1079,26 @@ body[data-theme="dark"] .theme-toggle {
   cursor: pointer;
 }
 
+.lang-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  font-size: 12px;
+  line-height: 1;
+}
+
 body[data-theme="dark"] .lang-toggle {
   background: rgba(255, 255, 255, 0.04);
   color: rgba(240, 236, 228, 0.92);
   border-color: rgba(255, 255, 255, 0.12);
+}
+
+body[data-theme="dark"] .lang-flag {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 body[data-theme="dark"] .theme-toggle:hover {
@@ -2130,14 +2146,15 @@ body[data-theme="dark"] .video-meta span {
 }
 
 .date-card {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 0.65rem;
-  align-items: center;
-  border-radius: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: 8px;
   border: 1px solid rgba(95, 70, 38, 0.2);
   background: rgba(255, 255, 255, 0.66);
-  padding: 0.62rem 0.68rem;
+  padding: 12px;
+  min-width: 220px;
+  scroll-snap-align: start;
 }
 
 body[data-theme="dark"] .date-card {
@@ -2145,25 +2162,94 @@ body[data-theme="dark"] .date-card {
   background: rgba(255, 255, 255, 0.06);
 }
 
-.date-left {
+.date-top {
+  display: flex;
+  gap: 8px;
+}
+
+.date-box {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 2.45rem;
+  justify-content: center;
+  min-width: 48px;
+  background: linear-gradient(135deg, rgba(199, 165, 117, 0.2), rgba(99, 219, 196, 0.1));
+  border-radius: 6px;
+  padding: 6px;
+  flex-shrink: 0;
 }
 
 .date-day {
   font-family: var(--font-display);
   line-height: 1;
-  font-size: 1.38rem;
+  font-size: 1.35rem;
+  font-weight: 700;
   color: #2f2418;
+}
+
+body[data-theme="dark"] .date-box {
+  background: linear-gradient(135deg, rgba(199, 165, 117, 0.15), rgba(99, 219, 196, 0.08));
+}
+
+body[data-theme="dark"] .date-day {
+  color: rgba(240, 236, 228, 0.95);
 }
 
 .date-month {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.22em;
+  font-size: 9px;
+  letter-spacing: 0.15em;
   color: rgba(43, 34, 23, 0.56);
+  text-transform: uppercase;
+}
+
+body[data-theme="dark"] .date-month {
+  color: rgba(240, 236, 228, 0.65);
+}
+
+.date-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.date-venue {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2f2418;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body[data-theme="dark"] .date-venue {
+  color: rgba(240, 236, 228, 0.92);
+}
+
+.date-city {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: rgba(43, 34, 23, 0.56);
+}
+
+body[data-theme="dark"] .date-city {
+  color: rgba(240, 236, 228, 0.62);
+}
+
+.date-time {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: rgba(43, 34, 23, 0.56);
+  margin-top: 2px;
+}
+
+body[data-theme="dark"] .date-time {
+  color: rgba(240, 236, 228, 0.62);
 }
 
 .date-center h3 {
